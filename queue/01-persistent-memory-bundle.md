@@ -12,8 +12,6 @@ feature: false
 ready: true
 ---
 
-**By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
-
 *How I keep Claude coherent across model swaps, session death, and long gaps — the substrate everything else in my workflow sits on top of.*
 
 ---

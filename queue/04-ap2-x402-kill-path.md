@@ -12,9 +12,9 @@ feature: false
 ready: true
 ---
 
-**By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
-
 ### What a live-trading systems engineer sees in AP2 and x402
+
+**By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
 
 ---
 
@@ -205,8 +205,6 @@ The protocols are good. The rails are real. The tuition has already been paid �
 Exits are sacred. That travels.
 
 Cheers.
-
-— *Thomas Adair. Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.*
 
 ---
 

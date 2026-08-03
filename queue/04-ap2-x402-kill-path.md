@@ -12,9 +12,9 @@ feature: false
 ready: true
 ---
 
-### What a live-trading systems engineer sees in AP2 and x402
-
 **By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
+
+*What a live-trading systems engineer sees in AP2 and x402*
 
 ---
 
@@ -217,3 +217,5 @@ Cheers.
 5. AP2: Google Cloud, "Announcing Agent Payments Protocol (AP2)" — https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol; spec at https://ap2-protocol.org/specification/ (also mirrored at agentpaymentsprotocol.info); repo at https://github.com/google-agentic-commerce/AP2. x402: Coinbase developer platform — https://www.coinbase.com/developer-platform/discover/launches/google_x402; Stripe USDC-on-Base integration, February 2026. Competing frameworks (ACP et al.): BlockEden, "The Agentic Commerce Protocol War" (April 2026) — https://blockeden.xyz/blog/2026/04/11/paypal-openai-agent-checkout-protocol-pyusd-agentic-commerce/.
 6. PrismML/Apple talks: reported by CNBC (July 14, 2026) and others; CEO Babak Hassibi on record that discussions are early-stage and evaluation-only. Compression technique is in the published ternary-quantization (BitNet-class) research family; PrismML's specific advance over published variants is self-reported and independently unverified.
 7. Kelly, Malamud & Zhou, "The Virtue of Complexity in Return Prediction," *Journal of Finance* 79(1), 2024 — https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13298. Critiques: Nagel, "Seemingly Virtuous Complexity in Return Prediction," BFI WP 2025-104 — https://bfi.uchicago.edu/wp-content/uploads/2025/08/BFI_WP_2025-104.pdf (the spanning tests reducing the headline alpha to t = −0.12, and the synthetic-data counterfactual showing the estimator builds the same rule regardless of the data fed to it); Buncic, "Simplified: A Closer Look at the Virtue of Complexity" — https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5239006. Authors' response conceding the nominal-vs-effective distinction: Kelly & Malamud, "Understanding the Virtue of Complexity" (2025) — https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5346842. Practitioner canon: Max Dama, *Max Dama on Automated Trading* (2008–2011 compilation), §4 on parameter minimalism and the "isolated peak" heuristic.
+
+— *Thomas Adair. Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.*

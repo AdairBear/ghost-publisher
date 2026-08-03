@@ -1,0 +1,46 @@
+# ghost-publisher — publishing cadence and post defaults.
+# Everything here is safe to edit by hand. No secrets live in this file.
+
+cadence:
+  # How often a queued piece goes out.
+  #   weekly   — once every 7 days on `weekday`
+  #   biweekly — once every 14 days on `weekday`
+  #   daily    — every day at `time`
+  every: weekly
+
+  # Day of week for weekly / biweekly. Ignored for daily.
+  weekday: tuesday
+
+  # Local time of day for the publish slot, 24-hour "HH:MM".
+  time: "09:00"
+
+  # "local" uses this Mac's timezone. Or set an IANA name explicitly,
+  # e.g. America/New_York, America/Los_Angeles, Europe/London.
+  timezone: local
+
+  # Refuse to schedule a slot closer than this many minutes from now.
+  # Protects against scheduling a post Ghost would have to publish instantly.
+  min_lead_minutes: 60
+
+post:
+  # Ghost post status to create. "scheduled" = Ghost publishes it server-side
+  # at published_at. Change to "draft" if you ever want a human gate.
+  status: scheduled
+
+  # Tags applied to every post, in addition to per-piece tags in frontmatter.
+  default_tags: []
+
+  # Email/newsletter is intentionally OFF for this phase (web-only).
+  # Ghost can add email to any individual post later with no rework here.
+  send_email: false
+
+api:
+  # Ghost Admin API version header. Bump only if Ghost deprecates v5.0.
+  accept_version: "v5.0"
+  timeout_seconds: 30
+
+paths:
+  queue_dir: queue
+  published_dir: published
+  state_file: state/published.json
+  log_file: logs/run.log

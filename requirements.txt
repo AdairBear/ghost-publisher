@@ -1,0 +1,7 @@
+# ghost-publisher runtime dependencies
+requests>=2.31
+Markdown>=3.5
+PyYAML>=6.0
+
+# Dev / test only (safe to install, not needed to run)
+pytest>=8.0

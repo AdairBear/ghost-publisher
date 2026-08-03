@@ -94,21 +94,27 @@ Your piece here, in normal Markdown.
 
 That's the whole interface. See `queue/README.md` for more detail.
 
-### Your four ready pieces
+### What's in the queue
 
-`queue/01`–`04` are **empty placeholders** — instructions only, no content was
-written for you:
+`queue/01`–`04` hold the four finished articles, staged in the locked
+publication order and marked `ready: true`:
 
-| File | Piece |
-|---|---|
-| `01-trident-report.md` | Trident Report / Digest |
-| `02-ap2-x402-essay.md` | AP2 / x402 essay |
-| `03-london-kz.md` | London-KZ |
-| `04-memory-bundle-guide.md` | Memory Bundle Guide |
+| File | Piece | Source of record |
+|---|---|---|
+| `01-persistent-memory-bundle.md` | The Persistent Memory Bundle | `trident-forge/docs/publishing/memory_bundle_ghost_ready.md` |
+| `02-expected-outcome-reframe.md` | The Expected Outcome Reframe | `trident-forge/docs/publishing/article2_expected_outcome_reframe.md` |
+| `03-adversarial-dynamical-systems.md` | Adversarial Dynamical Systems | `trident-forge/docs/publishing/article3_adversarial_dynamical_systems.md` |
+| `04-ap2-x402-kill-path.md` | The Kill Path Shares Fate with the Pay Path | `trident_report_ap2_x402_piece_v0.2.md` (2026-07-26 byline + D2 pass) |
 
-For each: delete the comment block, paste the real piece, fix `title:`, set
-`ready: true`. Until you do, every one of them is skipped — a placeholder can
-never reach Ghost.
+Each holds the reader-facing body only — the change logs, draft notes, and
+draft-meta blocks that live in the source files are editorial apparatus and
+stay behind.
+
+`queue/10-trident-report.md` and `queue/11-london-kz.md` are still **empty
+placeholders** for pieces that have not been written. They sit below the ready
+four and are skipped on every run. To use one: delete the comment block, paste
+the piece, fix `title:`, set `ready: true`, and renumber it to where you want
+it in the order.
 
 ---
 

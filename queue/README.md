@@ -41,17 +41,20 @@ Anything held back (`ready: false`, no title, empty body, or still containing
 the `PLACEHOLDER-DO-NOT-PUBLISH` marker) is skipped with a logged reason and
 the run moves to the next file. It is not an error.
 
-## The four seeded slots
+## What's here now
 
-`01`–`04` are **empty placeholders** for pieces that already exist elsewhere:
+`01`–`04` are the four finished articles, staged in the locked publication
+order and marked `ready: true`:
 
-- `01-trident-report.md` — Trident Report / Digest
-- `02-ap2-x402-essay.md` — AP2 / x402 essay
-- `03-london-kz.md` — London-KZ
-- `04-memory-bundle-guide.md` — Memory Bundle Guide
+- `01-persistent-memory-bundle.md` — The Persistent Memory Bundle
+- `02-expected-outcome-reframe.md` — The Expected Outcome Reframe
+- `03-adversarial-dynamical-systems.md` — Adversarial Dynamical Systems
+- `04-ap2-x402-kill-path.md` — The Kill Path Shares Fate with the Pay Path
 
-Each one contains instructions, not content. Nothing was written for you. Paste
-the real piece in, fix the title, flip `ready: true`.
+`10-trident-report.md` and `11-london-kz.md` are still **empty placeholders**
+for pieces that have not been written — instructions, not content. They sit
+below the ready four and are skipped on every run. Paste the real piece in, fix
+the title, flip `ready: true`, and renumber to move it up the order.
 
 ## After a piece publishes
 

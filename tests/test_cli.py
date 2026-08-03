@@ -242,13 +242,24 @@ def test_corrupt_state_file_stops_the_run(project: Path, monkeypatch) -> None:
 
 
 def test_shipped_queue_placeholders_are_all_held(monkeypatch) -> None:
-    """The four seeded slots must never publish as shipped."""
+    """Any unfilled slot in the shipped queue must never publish.
+
+    Real pieces have since been staged into `queue/`, so the queue is no
+    longer placeholder-only. The invariant that still has to hold is the
+    narrow one: a file that is *still* a placeholder is never publishable,
+    and any file that IS publishable carries a real title and body.
+    """
     root = Path(__file__).resolve().parent.parent
-    from ghost_publisher.queue import list_queue, next_publishable
+    from ghost_publisher.queue import PLACEHOLDER_MARKER, list_queue
 
     items = list_queue(root / "queue")
     assert len(items) >= 4
-    assert next_publishable(items) is None
+    for item in items:
+        if PLACEHOLDER_MARKER in item.path.read_text(encoding="utf-8"):
+            assert not item.publishable, f"{item.path.name} is a live placeholder"
+        elif item.publishable:
+            assert "REPLACE WITH REAL TITLE" not in item.title
+            assert item.body.strip()
 
 
 def test_status_runs_without_credentials(project: Path, capsys) -> None:

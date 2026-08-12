@@ -9,7 +9,7 @@ tags:
   - systems-architecture
   - AI-orchestrated-development
 feature: false
-ready: true
+ready: false
 ---
 
 **By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
@@ -89,7 +89,7 @@ That is the whole trick, and it is mechanical rather than clever. The checkpoint
 
 Every layer of what I ended up building exists because one of those four came back false. And each one needed a **different method**, which is the part I want to put weight on.
 
-**Checkpoints one and two came back false first, so the method was files.** A directory of small Markdown notes with an index at the top. I did not invent the shape — Andrej Karpathy published a pattern for an LLM wiki, an index plus small linked articles, and that gist is the direct ancestor of what sits on my disk. What I changed was the typing, because my failures were typed. "It forgot something" was never one problem. Forgetting who I am, forgetting a correction, forgetting where a build stands, and forgetting a paper I meant to keep are separate failures that have to be findable by kind. So every file carries a type, and the types *are* the failure classes.
+**Checkpoints one and two came back false first, so the method was files.** A directory of small Markdown notes with an index at the top. I did not invent the shape — Andrej Karpathy published a pattern for an LLM wiki, an index plus small linked articles, and that gist is the direct ancestor of what sits on my disk. [1] What I changed was the typing, because my failures were typed. "It forgot something" was never one problem. Forgetting who I am, forgetting a correction, forgetting where a build stands, and forgetting a paper I meant to keep are separate failures that have to be findable by kind. So every file carries a type, and the types *are* the failure classes.
 
 **Then checkpoint three came back false, and no amount of more files fixed it.** I had notes that were technically present and quietly wrong — a rule that was correct in April, followed dutifully in July, producing work that was confidently obsolete. Files do not create memory. What creates memory is writing things down at the moment they happen, in the format that will be consultable later. That is not a file problem; it is a cadence problem, and the method for it is discipline, not architecture. The rule I actually hold myself to: if I have to correct the same behavior twice, the second correction is a bug in my memory system, not a bug in the model.
 
@@ -190,5 +190,9 @@ More field notes are coming. In order:
 - The three-attempts rule — when to stop trying variations of a fix and admit the approach itself is wrong.
 
 If you are building alone with AI, or you want to be, I would like your company. Subscribe below, or find me on Threads.
+
+## References
+
+[1] Andrej Karpathy, "LLM Wiki" (`llm-wiki.md`), GitHub gist, April 2026. <https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f>
 
 — *Thomas Adair. Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.*

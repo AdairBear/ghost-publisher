@@ -200,7 +200,7 @@ Right-size it, or pay the tax on every turn you take.
 
 ## References
 
-[1] Anthropic. *The new rules of context engineering for Claude 5.* 2026. — [needs Thomas confirm: exact post title + URL]
+[1] Thariq Shihipar (Anthropic). "The new rules of context engineering for Claude 5 generation models." *Claude by Anthropic*, July 2026. https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models — Source for the ~80% system-prompt reduction and the "could the model figure this out on its own?" sorting test.
 
 [2] *Prompt-Induced Waste.* arXiv:2608.01347. — Source for the ~15× reasoning-token cost of prompt padding with no accuracy gain.
 
@@ -216,10 +216,11 @@ Right-size it, or pay the tax on every turn you take.
 
 **Inline [AUTHOR] markers:** none. Every fact here traces to the audit plan, the outline, or the verified restructure figures.
 
-**Two items needing your sign-off before publish:**
+**Citations: complete.** Reference [1] is resolved and pinned (Shihipar, Anthropic, July 2026) — the ~80% claim and the sorting test both trace to it. Reference [2] was solid throughout. No open citation work remains.
 
-1. **The Anthropic "~80% of Claude Code's system prompt" figure.** From your outline, not from my own read of the post. Confirm the number and framing. Reference [1] is stubbed and carries a `[needs Thomas confirm]` on the exact title + URL — that marker is in the References block, not in the prose.
-2. **The seven skills named in "Where the procedure went."** Your brief gave the count, not the names. I took them from the skills table in your current CLAUDE.md. Count is verified; the specific names are inference.
+**One item still needing your sign-off before publish:**
+
+1. **The seven skills named in "Where the procedure went."** Your brief gave the count, not the names. I took them from the skills table in your current CLAUDE.md. Count is verified; the specific names are inference.
 
 **Grounding decisions carried forward from the first pass:**
 

@@ -32,7 +32,7 @@ That's what forced the memory bundle. Files I own, on hardware I control, read b
 
 None of that is a straight line. It's a year of building the thing, watching a piece of it fail under real load, and replacing that piece with something that holds.
 
-Underneath all of it, growing the whole time, was a layer I'd never once weighed.
+Underneath all of it, growing the whole time, was the operating context. I'd weighed that layer before — more than once. What I'd never done was weigh it on a schedule.
 
 ## The layer underneath
 
@@ -42,7 +42,7 @@ The instruction file the model reads before it reads anything else. The rule fil
 
 That layer grew the way the rest of it grew — a rule at a time, each one added the day something went sideways and I decided it shouldn't go sideways twice. Which is the correct way to build it. Every line in there was earned.
 
-The problem isn't how it grew. The problem is that a set of rules only ever gets added to, and I'd never put the whole thing on a scale.
+The problem isn't how it grew. The problem is that a set of rules only ever gets added to — and I'd been checking it occasionally, when something prompted me, instead of on a cadence that kept pace with how fast everything around it was moving.
 
 And here's what I like about this one: it's the same shape as the memory bundle, one level up. The bundle is progressive disclosure for my FACTS — an index always resident, the bodies pulled in only when something matters. This is progressive disclosure for the operating context itself. I'd already built the pattern. I just hadn't noticed it applied here too.
 
@@ -52,9 +52,15 @@ I audit this system on purpose. Not on a crisis — on a cadence.
 
 That's the actual driver, and I want it stated plainly before I get to the research, because the research is what people will assume the reason was. It isn't. Hardening this rig as I go is how I work: I find the weak joint, I name it, I fix it, and I say out loud what I changed. Iterating in the open is the discipline, not an admission.
 
+I build the self-checks in deliberately. The project registry exists for exactly that reason — a standing inventory of what I'm running and where it stands, added specifically to keep me honest about a portfolio that got too wide to hold in my head. That's the pattern: when I notice I can't personally track something anymore, I build the thing that tracks it.
+
+So the auditing habit was never the gap. The gap was narrower and more specific — I had never put the HARNESS itself on that footing. Its weight, its health, whether the rules in it still pointed at anything real … I checked those when something prompted me to. Occasionally. Never on a clock.
+
 Every rule in that file got there the same way — something failed once, I decided it wouldn't fail twice, I wrote it down. That's a good instinct and it built a good system. It also has exactly one direction of travel. A rule set that only ever grows will keep working right up until the moment its own weight becomes the problem, and it will never tell you when you crossed that line. Nothing errors. Nothing warns you. It just costs more every turn than it returns.
 
-Which is why the pass is scheduled rather than triggered. If I waited for this layer to break loudly, I'd wait forever.
+And here's what makes the frequency the whole point rather than a detail. My output fluctuates — some weeks I ship constantly, some weeks I don't. The projects themselves change shape fast: a repo gets decommissioned, a tool gets swapped, a P0 moves. Every one of those events lands a little drift in the layer that every session reads. An occasional check can't keep up with that. The faster the operation moves, the more often its scaffolding needs weighing … and I'd had that exactly backwards, treating velocity as the reason I didn't have time for the pass.
+
+Velocity is the reason the pass has to be on a clock.
 
 I'd taken a pass at this exact layer the week before. It didn't fully hold — and I know that with certainty, because when I went back in this time the audit surfaced a lean-CLAUDE draft I'd started months earlier and never finished. I'd been circling this for a while, with good instincts and no leverage.
 
@@ -82,7 +88,7 @@ But a mechanism that loads your index for free loads everything else for free to
 
 Here's the part I'd underline. I had strong instincts about this layer for weeks and got nowhere. The number is what moved it. A well-tended instruction set is a year of hard-won corrections, and trimming it *feels* like handing back control you paid for — every builder knows that flinch. Instinct keeps a system heavy. The measurement is the only thing that frees it.
 
-You can't right-size what you won't weigh.
+You can't right-size what you won't weigh — and you can't keep it right-sized by weighing it once.
 
 ## What a year of moving fast leaves behind
 

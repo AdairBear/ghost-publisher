@@ -71,6 +71,8 @@ class PostDefaults:
     status: str = "scheduled"
     default_tags: list[str] = field(default_factory=list)
     send_email: bool = False
+    newsletter: str | None = None
+    email_segment: str = "all"
 
 
 @dataclass(frozen=True)

@@ -41,6 +41,7 @@ class QueueItem:
     ready: bool
     slug: str | None
     excerpt: str | None
+    web_only: bool
     skip_reason: str | None
 
     @property
@@ -131,6 +132,7 @@ def load_item(path: Path) -> QueueItem:
     ready = bool(front.get("ready", True))
     slug = str(front["slug"]).strip() if front.get("slug") else None
     excerpt = str(front["excerpt"]).strip() if front.get("excerpt") else None
+    web_only = bool(front.get("web_only", False))
 
     skip_reason: str | None = None
     if PLACEHOLDER_MARKER in text:
@@ -151,6 +153,7 @@ def load_item(path: Path) -> QueueItem:
         ready=ready,
         slug=slug,
         excerpt=excerpt,
+        web_only=web_only,
         skip_reason=skip_reason,
     )
 

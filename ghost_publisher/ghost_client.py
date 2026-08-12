@@ -223,11 +223,15 @@ class GhostClient:
         posts = response.json().get("posts") or []
         return posts[0] if posts else None
 
-    def create_post(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def create_post(
+        self, payload: dict[str, Any], *, params: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         """Create a post from HTML source.
 
         Args:
             payload: Body from `build_post_payload`.
+            params: Extra query parameters, e.g. `newsletter` and
+                `email_segment` to send the post to a newsletter on publish.
 
         Returns:
             The created post dict as returned by Ghost.
@@ -240,7 +244,7 @@ class GhostClient:
             response = self.session.post(
                 url,
                 headers=self._headers(),
-                params={"source": "html"},
+                params={"source": "html", **(params or {})},
                 json=payload,
                 timeout=self.api.timeout_seconds,
             )

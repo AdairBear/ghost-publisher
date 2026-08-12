@@ -71,7 +71,9 @@ def _archive(item: QueueItem, published_dir: Path, slot: datetime) -> Path:
     return destination
 
 
-def command_run(config: Config, *, dry_run: bool, force: bool) -> int:
+def command_run(
+    config: Config, *, dry_run: bool, force: bool, web_only: bool = False
+) -> int:
     """Schedule the top queued piece on Ghost.
 
     Args:
@@ -79,6 +81,8 @@ def command_run(config: Config, *, dry_run: bool, force: bool) -> int:
         dry_run: Render and compute everything, but make no API call and change
             no files. Works without any credentials.
         force: Proceed even if local state or Ghost says this piece exists.
+        web_only: Publish without emailing the newsletter, overriding the
+            configured default for this run only.
 
     Returns:
         A process exit code.
@@ -140,13 +144,31 @@ def command_run(config: Config, *, dry_run: bool, force: bool) -> int:
         defaults=config.post,
     )
 
-    if config.post.send_email:
-        logger.error(
-            "post.send_email is true, but email sending is intentionally not "
-            "implemented in this phase (web-only). Set it back to false, or add "
-            "email to the individual post in Ghost."
+    # Email routing. Default is to send to the configured newsletter; a piece
+    # opts out with `web_only: true` in frontmatter or the --web-only flag.
+    # Ghost binds the newsletter at the status transition into scheduled, so
+    # this can only be set at creation time — not patched onto a post later.
+    send_web_only = web_only or item.web_only
+    email_params: dict[str, str] = {}
+    if config.post.send_email and not send_web_only:
+        if not config.post.newsletter:
+            logger.error(
+                "post.send_email is true but post.newsletter is unset — set the "
+                "newsletter slug in config.yaml, or set send_email: false."
+            )
+            return EXIT_CONFIG
+        email_params = {
+            "newsletter": config.post.newsletter,
+            "email_segment": config.post.email_segment,
+        }
+        logger.info(
+            "email: will send to newsletter %r (segment %s) on publish",
+            config.post.newsletter,
+            config.post.email_segment,
         )
-        return EXIT_CONFIG
+    else:
+        reason = "web_only" if send_web_only else "post.send_email is false"
+        logger.info("email: web-only, no newsletter attached (%s)", reason)
 
     if dry_run:
         post = payload["posts"][0]
@@ -161,6 +183,12 @@ def command_run(config: Config, *, dry_run: bool, force: bool) -> int:
         )
         logger.info("  excerpt:      %s", post.get("custom_excerpt", "(none)"))
         logger.info("  html bytes:   %d", len(post["html"]))
+        logger.info(
+            "  email:        %s",
+            f"newsletter={email_params['newsletter']} segment={email_params['email_segment']}"
+            if email_params
+            else "(web-only, no email)",
+        )
         logger.info("  html preview: %s", post["html"][:200].replace("\n", " "))
         logger.info(
             "  would archive %s -> %s/", item.path.name, config.paths.published_dir.name
@@ -192,7 +220,7 @@ def command_run(config: Config, *, dry_run: bool, force: bool) -> int:
             "--force: slug %r already exists on Ghost; Ghost will de-duplicate it", slug
         )
 
-    created = client.create_post(payload)
+    created = client.create_post(payload, params=email_params)
     logger.info(
         "created post id=%s status=%s url=%s",
         created.get("id"),
@@ -311,6 +339,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="publish even if this piece or slug looks already published (rarely correct)",
     )
+    run_parser.add_argument(
+        "--web-only",
+        action="store_true",
+        help="publish without emailing the newsletter (overrides the config default)",
+    )
 
     sub.add_parser("status", help="show the queue, the next slot, and past publishes")
     return parser
@@ -337,7 +370,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "run":
-            return command_run(config, dry_run=args.dry_run, force=args.force)
+            return command_run(
+                config,
+                dry_run=args.dry_run,
+                force=args.force,
+                web_only=args.web_only,
+            )
         if args.command == "status":
             return command_status(config)
     except (ConfigError, StateError) as exc:

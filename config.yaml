@@ -30,9 +30,18 @@ post:
   # Tags applied to every post, in addition to per-piece tags in frontmatter.
   default_tags: []
 
-  # Email/newsletter is intentionally OFF for this phase (web-only).
-  # Ghost can add email to any individual post later with no rework here.
-  send_email: false
+  # Email/newsletter is ON: created posts are attached to the newsletter below
+  # and email members when Ghost publishes them. A single piece opts out with
+  # `web_only: true` in its frontmatter, or `run --web-only` for one run.
+  # NOTE: Ghost binds the newsletter at the status transition into scheduled,
+  # so this only applies at creation — it cannot be patched on afterwards.
+  send_email: true
+
+  # Newsletter SLUG (not name, not id) from /newsletters/.
+  newsletter: default-newsletter
+
+  # Who receives it: all | free | paid | status:-free etc.
+  email_segment: all
 
 api:
   # Ghost Admin API version header. Bump only if Ghost deprecates v5.0.

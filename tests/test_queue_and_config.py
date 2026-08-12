@@ -187,7 +187,10 @@ def test_shipped_config_yaml_is_valid() -> None:
     assert config.cadence.weekday == "tuesday"
     assert config.cadence.time == "09:00"
     assert config.post.status == "scheduled"
-    assert config.post.send_email is False
+    # Email is on by default; a piece opts out with `web_only: true`.
+    assert config.post.send_email is True
+    assert config.post.newsletter == "default-newsletter"
+    assert config.post.email_segment == "all"
 
 
 def test_invalid_cadence_values_are_rejected(tmp_path: Path) -> None:

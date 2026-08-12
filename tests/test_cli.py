@@ -67,7 +67,10 @@ class FakeGhostClient:
             return {"id": "existing123", "slug": slug, "status": "published"}
         return None
 
-    def create_post(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def create_post(
+        self, payload: dict[str, Any], *, params: dict[str, str] | None = None
+    ) -> dict[str, Any]:
+        self.last_params = dict(params or {})
         self.created.append(payload)
         post = payload["posts"][0]
         return {
@@ -253,7 +256,9 @@ def test_shipped_queue_placeholders_are_all_held(monkeypatch) -> None:
     from ghost_publisher.queue import PLACEHOLDER_MARKER, list_queue
 
     items = list_queue(root / "queue")
-    assert len(items) >= 4
+    # No count assertion: the queue drains as pieces are scheduled and
+    # archived, so any fixed number here goes stale. The invariant is below.
+    assert items
     for item in items:
         if PLACEHOLDER_MARKER in item.path.read_text(encoding="utf-8"):
             assert not item.publishable, f"{item.path.name} is a live placeholder"

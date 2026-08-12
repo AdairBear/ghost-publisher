@@ -54,7 +54,7 @@ The first layer is a directory of Markdown files.
 
 That's it. That's the whole shape. A folder, some text files, and an index at the top that knows where everything is.
 
-I didn't come up with this shape. Andrej Karpathy put out a gist for an LLM wiki — an index file, a pile of small linked articles, wikilinks running between them — and what's on my disk is a direct descendant of it. I read it, recognized it as the answer to a problem I'd been losing to for months, and built my own thing on the bones of his idea. That's a different act than taking someone's work, and I want to be clear which one this is. He gave the shape away for free. I'd rather say his name than quietly absorb it … so: thank you, Andrej.
+I didn't come up with this shape. Andrej Karpathy put out a gist for an LLM wiki — an index file, a pile of small linked articles, wikilinks running between them — and what's on my disk is a direct descendant of it. I read it, recognized it as the answer to a problem I'd been losing to for months, and built my own thing on the bones of his idea. That's a different act than taking someone's work, and I want to be clear which one this is. He gave the shape away for free. I'd rather say his name than quietly absorb it … so: thank you, Andrej. [1]
 
 What I changed was the typing, and I changed it because my failures were typed.
 
@@ -181,5 +181,9 @@ It doesn't have to be Markdown. It doesn't have to be a VPS. It does have to sur
 The rest of what I build sits on top of this.
 
 More field notes to follow.
+
+## References
+
+[1] Andrej Karpathy, "LLM Wiki" (`llm-wiki.md`), GitHub gist, April 3, 2026. <https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f>
 
 — *Thomas Adair. Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.*

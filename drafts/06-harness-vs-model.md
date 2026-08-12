@@ -44,11 +44,11 @@ I want the order of events straight, because the flattering version of this stor
 
 What happened is I lost to the same failure often enough to build around it. Months later, two papers turned up and priced the bill I'd already been paying.
 
-**Prompt-Induced Waste** [1] found that an identical model, running an identical task, on an identical prompt, can cost 5–30× more depending on nothing but the harness it runs inside. Same engine, same trip, thirty times the fuel. It gets more specific: a common harness re-transmits a fixed prefix of 16,000–20,000 tokens every turn. Padding a prompt with *develop and compare several approaches* burns roughly 15× the reasoning tokens for no accuracy gain. Generic *think deeply* phrasing runs 1.6–2.2× — more spend, same answer. A misleading architectural hint costs 2.61×, because the model dutifully chases whatever you accidentally pointed it at.
+**Prompt-Induced Waste** [1] found that an identical model, running an identical task, on an identical prompt, can cost 5–30× more depending on nothing but the harness it runs inside. Same engine, same trip, thirty times the fuel. It gets more specific: a common harness re-transmits 16,000–20,000 tokens of fixed prefix every turn — the standing block of instructions and tool definitions that goes out ahead of every message you send, relevant or not. Padding a prompt with *develop and compare several approaches* burns roughly 15× the reasoning tokens for no accuracy gain. Generic *think deeply* phrasing runs 1.6–2.2× — more spend, same answer. A misleading architectural hint costs 2.61×, because the model dutifully chases whatever you accidentally pointed it at.
 
 Not one of those is a model deficiency. Every one is a decision somebody made about the scaffolding — and in most setups, that somebody isn't you.
 
-**Model or Harness?** [2] contributes a taxonomy, which sounds academic until you try debugging an agent without one. It splits agent failures into fault families and gives the harness its own: context, memory, tools, subagents. Separate from the model. Its own diagnosis. Its own fix.
+**Model or Harness?** [2] contributes a fault taxonomy — a fixed vocabulary for the ways an agent run can fail — which sounds academic until you try debugging an agent without one. It splits agent failures into fault families and gives the harness its own: context, memory, tools, subagents. Separate from the model. Its own diagnosis. Its own fix.
 
 That one distinction changed how I work. I now label the fault side before touching code — `planner—executor · fault:harness` when a contract gets dropped in a handoff, `agent—mcp · fault:tool` when a tool returns malformed JSON. The sides are model, harness, tool, memory, eval, and the fixes don't transfer between them. A `fault:model` label routes to a prompt or tier change. A `fault:harness` label routes to a scaffold change. Patching the wrong side is the most common wasted fix I make, and the label is what stops me making it.
 
@@ -62,15 +62,35 @@ The numbers above are someone else's measurements. Here are mine.
 
 **The prefix I wasn't watching.** In my own setup — mine, the one I built — I was loading 13,891 tokens of instruction on every single turn before the session did a minute of useful work. That was the last field note: a 62.8% cut, down to 5,167 always-on. In a harness that isn't yours, you don't get to measure that. You just pay it.
 
-**The tool surface I hand each agent.** Cost leaks live in the re-transmitted per-turn prefix — tool schemas, skill blurbs, MCP inventories — not in how any single request is worded. A subagent whose only job is reading three files does not need the full MCP surface described to it. So schemas get trimmed per role, and when a session feels expensive I audit the prefix BEFORE I blame the conversation. That lever only exists if you own the layer where schemas get assembled.
+**The tool surface I hand each agent.** Cost leaks live in that re-transmitted per-turn prefix — the tool schemas, the skill blurbs, the MCP inventories listing every external tool server the agent could theoretically reach for — not in how any single request is worded. A subagent whose only job is reading three files does not need the full MCP surface described to it. So schemas get trimmed per role, and when a session feels expensive I audit the prefix BEFORE I blame the conversation. That lever only exists if you own the layer where schemas get assembled.
 
 **The memory that left with the tool.** OpenClaw, then PicoClaw, then Hermes — inside one year. Each the obvious choice at the time. Each switch cost me everything the last one held. The model was never the thing I lost.
+
+## Bought on the promise
+
+That last one deserves more than a line, because the churn wasn't restlessness. Each of those tools I picked up for a specific reason: it promised something my setup didn't have yet. Every one of them was a real answer to a real gap I'd hit that month.
+
+Not one of them delivered on it completely.
+
+That's the gap I want named, because it's the one nobody puts in the README. The promise is coherent. The demo holds. And then the thing you switched FOR is the thing that thins out around month three — it does eighty percent of what you came for, the last twenty is the part your work actually depends on, and the last twenty is the part you can't reach from the outside.
+
+Hermes is the one that stuck, and I'll be straight about its status: it still hasn't fully delivered either. I'm still working on getting real use out of it. That's a present-tense sentence, not a past-tense one.
+
+But here's what I could do with it — and this is the part that matters.
+
+I took the concept and shaped it down. The core idea in Hermes is an agent that lives outside the work and talks to you about it. I lifted exactly that into Trident Forge and deliberately watered it down: not an assistant, not a general-purpose second brain, just an agent whose entire job is telling me what the system is doing. State. Health. What fired, what didn't, what's about to. It sits beside the trading system and reports on it — it never touches the path. Ninety percent of the original idea got cut, on purpose, because ninety percent of it wasn't what I needed.
+
+That cut is the whole argument for building my own, in the shape I built it.
+
+You cannot make that cut from inside somebody else's product. You take the tool on its terms — its scope, its surface, its idea of what you must want — and if what you need is a tenth of it wired somewhere it wasn't designed to go, the answer is no. Owning the layer meant I could keep the idea and leave the rest.
+
+Renting isn't the wrong call; it's the right one for plenty of people. But not everyone works the same way, and cutting a good idea down to the size of your actual problem is not something to be nervous about doing.
 
 ## What I built instead
 
 Not out of principle. Because those specific levers were the ones I needed my hands on.
 
-**Every child prompt is bounded.** Anything I dispatch to an agent carries the same three things: explicit SCOPE — which files and directories are actually in play — a smallest-sufficient-change instruction, and a named stop condition drawn from a fixed set of terminal states. Success. No-op. Blocked. Stalled. Exhausted. An agent that can't name which one it hit hasn't finished; it's just stopped talking.
+**Every child prompt is bounded.** Anything I dispatch to an agent carries the same three things: explicit SCOPE — which files and directories are actually in play — a smallest-sufficient-change instruction, and a named stop condition drawn from a fixed set of terminal states — five named ways a run is allowed to end, and it has to end in one of them. Success. No-op. Blocked. Stalled. Exhausted. An agent that can't name which one it hit hasn't finished; it's just stopped talking.
 
 **Two phrasings are banned at the template level.** *Develop and compare several approaches* and generic *think deeply* padding. Both are measured waste [1] — roughly 15× and 1.6–2.2× the reasoning tokens, with no accuracy gain either time. Banning them in the template means that tax gets paid zero times instead of every time. Effort comes from choosing the model tier, not from stacking adjectives onto a prompt. Surgical changes, applied to prompts instead of diffs.
 
@@ -78,7 +98,7 @@ Not out of principle. Because those specific levers were the ones I needed my ha
 
 **Memory is mine to read and edit.** Plain Markdown, greppable, wrong facts fixed by editing a sentence. There's a linter that catches the mechanical failures — dangling wikilinks, index drift, stale dates — at zero token cost, before I spend a model on the judgment calls. Covered fully in the last field note; it's the load-bearing piece.
 
-**Nothing ships on a claim.** A verifier runs against any diff touching live money, the exit path, or the risk engine, and its default stance is FAIL. An error is never reported as success. Nothing gets marked complete without the test output to prove it.
+**Nothing ships on a claim.** A verifier — a separate agent whose only job is trying to break the claim that the work is done — runs against any diff touching live money, the exit path, or the risk engine, and its default stance is FAIL. An error is never reported as success. Nothing gets marked complete without the test output to prove it.
 
 That last one isn't a productivity preference. It's the difference between a system that tells you what happened and a system that tells you what it hoped happened.
 
@@ -90,15 +110,25 @@ The argument stops being abstract the moment there's live money in it.
 
 My own doctrine took a year and some expensive lessons to arrive at: **no LLM anywhere in the execution path.** The model does its work offline — building the strategy, tuning it, arguing with me about it. Then it gets out of the way. What actually touches the market is deterministic, inspectable, and boring on purpose. Risk gates that don't negotiate. Breakers that survive a restart.
 
+Why that boundary is non-negotiable is a whole field note on its own — what actually breaks at the moment it gets crossed, and what learning that cost me. That one's coming.
+
 That's a harness position, not a model position. It doesn't say the model is weak. It says the model belongs in the design loop and not the execution loop, and the boundary between those two is something the harness enforces — or fails to.
 
-Here's what convinced me it wasn't just my taste.
+I read other builders' systems on purpose. Not for reassurance — for pressure. Somebody else's architecture is the cheapest way I know to find out whether mine survives contact with a mind that never talked to me.
 
-I've since read other people's live trading systems, built independently, in different markets, with no contact with me or with each other — and the serious ones keep landing in the same place. Intelligence upstream. Determinism at the point of execution.
+Sequence matters here, so I'll be exact about it. I'd already fought my way to that doctrine — in futures, alone, over a year of expensive lessons — before I ever found the system I'm about to describe. It didn't teach me the shape. It showed up afterward and had independently landed on it.
 
-Taste diverges. When independent builders converge on the same shape, the shape is being dictated by the problem, not chosen by the builders. That's the strongest evidence I have, and it's the kind you can't manufacture.
+Polybot [3] is an open-source Polymarket trading infrastructure and strategy reverse-engineering toolkit — MIT-licensed, Java 21 microservices, built by a developer going by ent0n29. Different market. Different asset class. Different language, different stack, different everything. No contact, no shared lineage, no common influence I can find.
 
-The counter-position exists too, and it's worth naming: vendor platforms that sell the whole agentic scaffold as a product. Their orchestration, their memory model, their prompts, their upgrade schedule. Convenient — genuinely, and I don't say that with an edge. But every lever in the sections above is one they hold and you don't.
+It lands in the same four places mine did.
+
+There is no LLM in the execution path. The strategy is built and tuned offline, and the split is structural rather than stylistic — the repo separates a strategy service from an executor service, so the thing that thinks and the thing that fires are different runtimes. The risk gates are deterministic. The breakers survive a restart.
+
+Two builders, working alone, in markets that share nothing except the fact that a wrong order costs real money — and the same four load-bearing decisions.
+
+That convergence is the argument, and the argument isn't that I was right. Taste diverges. Put two builders on one problem with free rein and you normally get two systems that don't resemble each other, because architecture is where personality leaks out. When independent solutions converge anyway, the shape isn't coming from either builder. It's being dictated by the problem.
+
+So the doctrine stands on its own feet, not on mine: intelligence in the design loop, not the execution loop. The model does its work offline; the thing that touches live money is deterministic and inspectable. I didn't arrive there because it's elegant. I arrived there because the problem doesn't leave much else standing — and somebody I've never met got pushed to exactly the same place.
 
 ## What owning it costs
 
@@ -134,6 +164,8 @@ Build the part you keep.
 
 [2] *Model or Harness?* arXiv:2607.28802. — Source for the harness-vs-model fault taxonomy, the `comp1—comp2 · fault:side` labeling convention, and the seven memory failure modes.
 
+[3] ent0n29. *Polybot — open-source Polymarket trading infrastructure & strategy reverse-engineering toolkit.* GitHub, MIT license. https://github.com/ent0n29/polybot — Source for the independently-converged architecture: no LLM in the execution path, offline strategy construction with a strategy service separated from an executor service, deterministic risk gates, and restart-surviving breakers.
+
 ---
 
 *These field notes feed the monthly Trident Digest — the short-form version, once a month, for people building alone with AI. Subscribe below, or find me on Threads.*
@@ -144,10 +176,14 @@ Build the part you keep.
 
 ## Draft notes
 
-**Inline [AUTHOR] markers: none.** The rough-draft markers are gone from the prose. Every claim in the body is either your own measured system or a cited paper.
+**Inline [AUTHOR] markers: none.** The rough-draft markers are gone from the prose. Every claim in the body is either your own measured system or a cited source.
 
-**"Where this stops being an opinion" — rewritten to stand without unverified specifics.** No company or repo is named, and no third-party architecture is asserted. The convergence argument now rests on your own doctrine plus a general, defensible observation about independently-built systems. One open question on this went to the reply, not the article.
+**"Where this stops being an opinion" — rebuilt on Polybot as the single example, framed as independent convergence.** The unnamed-vendor foil is cut entirely; there is no lock-in counter-position left in the piece. The argument now runs: you reached the doctrine first, alone, in futures — then found a system built independently in prediction markets that landed on the same four architectural decisions (no LLM in the execution path, offline strategy construction with strategy service split from executor service, deterministic risk gates, restart-surviving breakers). The claim being defended is that the doctrine is right, not that you are. Studying other builders' systems is stated as deliberate pressure-testing, and the sequence — doctrine first, corroboration second — is what makes it corroboration rather than source. Polybot is inline-cited and carries reference [3].
 
 **Grounding for "What I built instead":** bounded-prompt triple (scope + smallest-sufficient-change + named stop condition), the five terminal states, the two banned phrasings and their measured cost, the >5-agent fan-out gap-check, per-role schema trimming and prefix-first cost auditing, the zero-token memory linter, and the FAIL-by-default verifier — all taken from the Agent Task Hygiene block and standing rails in your live `~/.claude/CLAUDE.md`. Dispatch and Conductor are named as run types only; no internals are described.
+
+**"Bought on the promise" — new bridging section between the cost section and "What I built instead."** The OpenClaw → PicoClaw → Hermes churn is no longer a one-line aside. It now carries the promise-vs-delivery gap explicitly, keeps Hermes honest and present-tense (still in progress, still being made useful), and lands the concrete adaptation beat: the Hermes concept lifted into Trident Forge as a deliberately watered-down state-notification agent that sits beside the system rather than in the execution path — which also keeps it consistent with the no-LLM-in-the-path doctrine later in the piece. The closing turn is about the RIGHT TO ADAPT rather than the build-vs-rent verdict, so it sets up the "most people should rent" beat in "What owning it costs" instead of pre-empting it.
+
+**Accessibility pass + forward pointer.** Five terms now get a few words of plain grounding on first use and full depth after: the per-turn prefix (the standing block of instructions and tool definitions re-sent ahead of every message), fault taxonomy (a fixed vocabulary for how a run fails), MCP inventories (the list of external tool servers an agent could reach for), terminal states (five named ways a run is allowed to end), and the verifier (a separate agent trying to break the done-claim). No glossary, no restatement elsewhere; "harness" left alone since the engine/car passage already carries it. Separately, the no-LLM-in-the-execution-path doctrine now carries a two-sentence forward pointer marking the WHY as its own future field note — serialization hook into the Digest funnel, no "stay tuned" register.
 
 **Still open:** the 13,891 → 5,167 / 62.8% figures are referenced here as established by the previous piece rather than re-derived, so they stay consistent across both.

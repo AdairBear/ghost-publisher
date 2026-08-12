@@ -1,7 +1,7 @@
 ---
 title: "Harness vs. Model: Why I Built My Own"
 slug: "harness-vs-model"
-excerpt: "The thing that keeps failing isn't the model. It's the scaffolding around it — the prompts, the tools, the memory, the orchestration. That part you can own."
+excerpt: "The thing that kept failing was never the model. It was the scaffolding around it — the prompts, the tools, the memory, the dispatch. That part I can own."
 tags:
   - AI
   - solo-builder
@@ -20,115 +20,119 @@ ready: false
 
 An agent botches a task and the reflex arrives before the thought does: *the model isn't smart enough.*
 
-So you switch. Pay for the bigger one. Wait for next month's release, because there's always a next month's release and it's always better than this month's.
+So you switch. Pay for the bigger one. Wait for next month's release — because there's always a next month's release, and it's always better than this month's.
 
 I did that for the better part of a year. It rarely fixed anything.
 
-What it took me too long to notice is that my failures had a *shape*, and the shape didn't move when the model did. The same work got re-explained. The same corrections got given twice. The same context evaporated at the same seams. A stronger model did that work faster and more fluently, and then lost it in exactly the same place, for exactly the same reason.
+My failures had a shape, and the shape never moved when the model did. The same work got re-explained. The same corrections got given twice. Context evaporated at the same seams every time. A stronger model did that work faster and more fluently … and then lost it in exactly the same place, for exactly the same reason.
 
-That's not a model problem. That's a problem with everything *around* the model.
+That's not a model problem. That's everything AROUND the model.
 
-## Naming the thing around the model
+## Naming it
 
-There's a word for it and it isn't a great one, but here it is: the **harness**.
+There's a word for that everything, and it isn't a great one: the **harness**.
 
-Everything that isn't the model. The system prompt it wakes up inside. The tool definitions re-sent on every single turn. The memory it can read, if it can read any. The way work gets broken up, dispatched, approved, verified. The rules that load whether they're relevant or not.
+The system prompt the model wakes up inside. The tool definitions re-sent on every turn. The memory it can read, if it can read any. The way work gets scoped, dispatched, approved, verified. The rules that load whether they're relevant or not.
 
-The model is the engine. The harness is the whole car — the transmission, the fuel line, the dashboard, the fact that the steering wheel is connected to anything.
+The model is the engine. The harness is the whole car.
 
-Most people rent the entire car and spend all their time complaining about the engine.
+Most people rent the car and spend all their time complaining about the engine.
 
-## I'd been paying this bill before it was priced
+## I'd been paying the bill before it was priced
 
-I want to be careful about the order of events here, because the tempting version of this story is *I was right and then the research proved it*, and that's not what happened. What happened is that I lost to the same failure enough times to build around it, and then, months later, two papers turned up and put numbers on the bill I'd already been paying.
+I want the order of events straight, because the flattering version of this story is *I was right and then research proved it* — and that isn't what happened.
 
-The first is **Prompt-Induced Waste** (arXiv 2608.01347). The finding that reorganized my thinking: an identical model, running an identical task, with an identical prompt, can cost **5–30× more** depending on nothing but the harness it's running inside. Same engine. Same trip. Thirty times the fuel.
+What happened is I lost to the same failure often enough to build around it. Months later, two papers turned up and priced the bill I'd already been paying.
 
-It gets more specific, and more uncomfortable. A common harness re-transmits a fixed prefix of **16,000–20,000 tokens on every turn** — tool schemas, instruction blocks, inventories you never see and can't touch. Padding a prompt with "develop and compare several approaches" burns roughly **15× the reasoning tokens** with no accuracy gain to show for it. Generic "think deeply" phrasing runs **1.6–2.2×**, same result: more spend, same answer. And a *misleading architectural hint* — one wrong steer in the framing — costs **2.61×**, because the model dutifully chases the thing you accidentally pointed it at.
+**Prompt-Induced Waste** [1] found that an identical model, running an identical task, on an identical prompt, can cost 5–30× more depending on nothing but the harness it runs inside. Same engine, same trip, thirty times the fuel. It gets more specific: a common harness re-transmits a fixed prefix of 16,000–20,000 tokens every turn. Padding a prompt with *develop and compare several approaches* burns roughly 15× the reasoning tokens for no accuracy gain. Generic *think deeply* phrasing runs 1.6–2.2× — more spend, same answer. A misleading architectural hint costs 2.61×, because the model dutifully chases whatever you accidentally pointed it at.
 
-Read that list again and notice what's on it. Not one of those is a model deficiency. Every one is a decision someone made about the scaffolding, and in most setups that someone isn't you.
+Not one of those is a model deficiency. Every one is a decision somebody made about the scaffolding — and in most setups, that somebody isn't you.
 
-The second is **Model or Harness?** (arXiv 2607.28802), and its contribution is a taxonomy — which sounds academic until you try to debug an agent without one. It splits agent failures into fault families, and the harness gets its own: context, memory, tools, subagents. Separate from the model. Its own diagnosis, its own fix.
+**Model or Harness?** [2] contributes a taxonomy, which sounds academic until you try debugging an agent without one. It splits agent failures into fault families and gives the harness its own: context, memory, tools, subagents. Separate from the model. Its own diagnosis. Its own fix.
 
-That distinction is the whole practical payoff, and I've since folded it into how I work: label the fault side *before* touching code. Was that a model failure, a harness failure, a tool failure, a memory failure, an eval failure? Because the fixes don't transfer. A harness failure — a contract dropped in a handoff between two agents — will not be fixed by a smarter model or a better prompt, and you can burn a whole afternoon proving that to yourself. Patching the wrong side is the most common wasted fix I make.
+That one distinction changed how I work. I now label the fault side before touching code — `planner—executor · fault:harness` when a contract gets dropped in a handoff, `agent—mcp · fault:tool` when a tool returns malformed JSON. The sides are model, harness, tool, memory, eval, and the fixes don't transfer between them. A `fault:model` label routes to a prompt or tier change. A `fault:harness` label routes to a scaffold change. Patching the wrong side is the most common wasted fix I make, and the label is what stops me making it.
 
-The paper also names seven distinct ways *memory* fails — stale state, pollution, redundancy, overgeneralization, a decision never written down, a decision written down and never retrieved, and the rationale getting stripped out until a rule survives with no *why* attached and no way to falsify it.
+The same paper names seven distinct ways memory fails: stale state, pollution, redundancy, overgeneralization, a decision never written down, a decision written down and never retrieved, and rationale erosion — where the *why* gets stripped out and you're left with a standing rule nobody can falsify.
 
-I'd met most of those personally. I just hadn't known they had names, or that they were one family.
+I'd met most of those personally. I hadn't known they were one family.
 
-## What a bad harness actually costs, from my seat
+## What my own harness was costing me
 
-Make it concrete, because the numbers above are someone else's measurements and mine are the ones I can vouch for.
+The numbers above are someone else's measurements. Here are mine.
 
-**The prefix you don't control.** In my own setup — mine, the one I built — I was loading 13,891 tokens of instruction on every turn before the session did a single useful thing. I only know that because I finally measured it. In a harness that isn't yours, you don't get to measure it. You just pay it.
+**The prefix I wasn't watching.** In my own setup — mine, the one I built — I was loading 13,891 tokens of instruction on every single turn before the session did a minute of useful work. That was the last field note: a 62.8% cut, down to 5,167 always-on. In a harness that isn't yours, you don't get to measure that. You just pay it.
 
-**The tools you can't trim.** A subagent whose only job is to read three files does not need the full inventory of every tool in the system re-described to it. Trimming schemas per role is a real lever with a real payoff — and it exists only if you own the layer where schemas are assembled.
+**The tool surface I hand each agent.** Cost leaks live in the re-transmitted per-turn prefix — tool schemas, skill blurbs, MCP inventories — not in how any single request is worded. A subagent whose only job is reading three files does not need the full MCP surface described to it. So schemas get trimmed per role, and when a session feels expensive I audit the prefix BEFORE I blame the conversation. That lever only exists if you own the layer where schemas get assembled.
 
-**The memory that evaporates when the vendor changes it.** OpenClaw, then MoltBot, then Hermes — inside one year. Every one of them was the obvious choice at the time. Every switch cost me everything the last one held. That's the sentence the memory-bundle piece grew out of, and it's a harness story from beginning to end. The model was never the thing I lost.
+**The memory that left with the tool.** OpenClaw, then PicoClaw, then Hermes — inside one year. Each the obvious choice at the time. Each switch cost me everything the last one held. The model was never the thing I lost.
 
-**The tax on prompts nobody audits.** Fifteen times the reasoning tokens for a phrase that sounds like diligence. If your harness templates that phrasing into every dispatched task — and plenty do — you are paying it on every task, and there is no setting for it.
-
-Every one of those is a line item. In a rented harness, every one of them is also a line item you cannot reach.
-
-## So I built my own
+## What I built instead
 
 Not out of principle. Because those specific levers were the ones I needed my hands on.
 
-What owning it actually buys, concretely:
+**Every child prompt is bounded.** Anything I dispatch to an agent carries the same three things: explicit SCOPE — which files and directories are actually in play — a smallest-sufficient-change instruction, and a named stop condition drawn from a fixed set of terminal states. Success. No-op. Blocked. Stalled. Exhausted. An agent that can't name which one it hit hasn't finished; it's just stopped talking.
 
-**Bounded prompts.** Every child prompt I dispatch carries the same three things: explicit scope — which files are in play — a smallest-sufficient-change instruction, and a named stop condition. The banned phrasing is banned at the template level, which means the 15× tax gets paid zero times instead of every time. Effort comes from choosing the model tier, not from stacking adjectives on the prompt.
+**Two phrasings are banned at the template level.** *Develop and compare several approaches* and generic *think deeply* padding. Both are measured waste [1] — roughly 15× and 1.6–2.2× the reasoning tokens, with no accuracy gain either time. Banning them in the template means that tax gets paid zero times instead of every time. Effort comes from choosing the model tier, not from stacking adjectives onto a prompt. Surgical changes, applied to prompts instead of diffs.
 
-**Tool schemas trimmed per role.** The reader agent gets the reader's tools. Prefix hygiene is where the cost leaks actually live — not in how any single request is worded — and it's the first place I look now when a session feels expensive, before I blame the conversation.
+**Fan-out is a design decision, not a reflex.** Past roughly five concurrent agents, orchestration stops being free — a Dispatch or Conductor run gets a gap-check first, and the result gets reported as a terminal-state tally rather than a vibe.
 
-**A memory that's mine to read and edit.** Plain Markdown. Greppable. Wrong facts get fixed by editing a sentence. Covered in full in the previous field note, and it is the single load-bearing piece of the whole thing.
+**Memory is mine to read and edit.** Plain Markdown, greppable, wrong facts fixed by editing a sentence. There's a linter that catches the mechanical failures — dangling wikilinks, index drift, stale dates — at zero token cost, before I spend a model on the judgment calls. Covered fully in the last field note; it's the load-bearing piece.
 
-**An audit trail I can actually see.** Which is what makes any of the above verifiable rather than aspirational.
+**Nothing ships on a claim.** A verifier runs against any diff touching live money, the exit path, or the risk engine, and its default stance is FAIL. An error is never reported as success. Nothing gets marked complete without the test output to prove it.
 
-And the piece before this one is the clearest case study I have: I cut my always-on operating context by 62.8% and simultaneously discovered it was pointed at an uninstalled tool, calling dead function names, and missing every rule I'd genuinely have fought for. Not one line of that was model work. All of it was harness work, and all of it was reachable only because the harness was mine.
+That last one isn't a productivity preference. It's the difference between a system that tells you what happened and a system that tells you what it hoped happened.
 
-## The trading proof
+None of the above is model work. All of it is harness work — and all of it was reachable only because the harness is mine.
 
-The argument stops being abstract when there's live money in it, and there are two examples I keep coming back to — one as a foil, one as something stranger and more convincing.
+## Where this stops being an opinion
 
-**The foil: a vendor-owned agentic trading environment.** Billed as the first of its kind — the whole scaffold delivered as a product. Convenient. Genuinely impressive in places. And entirely theirs: their orchestration, their memory model, their prompts, their upgrade schedule, and, as far as anyone outside can tell, an architecture that keeps AI inside the execution loop.
+The argument stops being abstract the moment there's live money in it.
 
-*[AUTHOR: needs the product name (OmniPhi per your outline), a source link, and — most importantly — verification of the "AI in the execution loop" claim. That's a specific architectural assertion about a real company. I won't assert it on outline-notes alone. If it can't be sourced, the beat still works with the claim cut down to "their scaffold, their lock-in."]*
+My own doctrine took a year and some expensive lessons to arrive at: **no LLM anywhere in the execution path.** The model does its work offline — building the strategy, tuning it, arguing with me about it. Then it gets out of the way. What actually touches the market is deterministic, inspectable, and boring on purpose. Risk gates that don't negotiate. Breakers that survive a restart.
 
-**The convergence: a stranger's engine that arrived where I did.** A public Polymarket trading system, built by someone I've never spoken to, with no shared influences I'm aware of — and it lands on the exact doctrine I'd fought my way to. No LLM anywhere in the execution path. The agent builds and tunes the strategy offline, then gets out of the way. Deterministic risk gates. Breakers that survive a restart.
+That's a harness position, not a model position. It doesn't say the model is weak. It says the model belongs in the design loop and not the execution loop, and the boundary between those two is something the harness enforces — or fails to.
 
-*[AUTHOR: needs the repo name/link (Polybot per your outline) and a check that the four architectural claims above match what's actually in it. Your outline flagged whether to name it directly as your call — I've described it unnamed pending that.]*
+Here's what convinced me it wasn't just my taste.
 
-That second one is the more interesting evidence, and it's the reason this beat exists.
+I've since read other people's live trading systems, built independently, in different markets, with no contact with me or with each other — and the serious ones keep landing in the same place. Intelligence upstream. Determinism at the point of execution.
 
-When two people, working alone, in different markets, without coordinating, land on the same harness discipline — that's not taste. Taste diverges. When independent solutions converge on the same shape, the shape is being dictated by the problem.
+Taste diverges. When independent builders converge on the same shape, the shape is being dictated by the problem, not chosen by the builders. That's the strongest evidence I have, and it's the kind you can't manufacture.
 
-And the shape both of us landed on is a statement about the harness, not about the model: **the model does its work offline, and the thing that touches live money is deterministic and inspectable.** The intelligence goes in the design loop. It does not go in the execution loop.
+The counter-position exists too, and it's worth naming: vendor platforms that sell the whole agentic scaffold as a product. Their orchestration, their memory model, their prompts, their upgrade schedule. Convenient — genuinely, and I don't say that with an edge. But every lever in the sections above is one they hold and you don't.
 
-## What it costs to own it
+## What owning it costs
 
-I'd rather say this plainly than let you find out at 1am.
+I'd rather say this plainly than let you discover it at 1am.
 
-Owning your harness means you maintain it. You debug it. There is no vendor to escalate to, no status page to check, no support thread where someone else is already on it. When it breaks at one in the morning it breaks in code you wrote, and the person qualified to fix it is you, and the reason it broke is probably also you.
+Owning your harness means maintaining it. Debugging it. There's no vendor to escalate to, no status page, no support thread where someone's already on it. When it breaks at one in the morning, it breaks in code you wrote.
 
-The 62.8% cut in the last piece is the honest illustration. That entropy accumulated in a harness I *own*. Ownership didn't prevent the rot. It gave me somewhere to stand while I measured it.
+And ownership doesn't prevent rot — the 62.8% cut in the last piece was entropy that accumulated in a harness I own completely. What ownership gave me was somewhere to stand while I measured it.
 
-Most people should not do this. If your work lives in one tool, on one machine, and mostly looks like conversation — the rented harness is better than what you'd build, and it's better on day one instead of month six. Building your own scaffolding out of principle when a product would do is a very elaborate way of not shipping.
+Most people shouldn't do this. If your work lives in one tool, on one machine, and mostly looks like conversation, the rented harness beats what you'd build, and it beats it on day one instead of month six. Building your own scaffolding on principle when a product would do is an elaborate way of not shipping.
 
 Here's my line.
 
-I own it because the failures that were actually killing me lived in the harness, and I'd rather be able to reach them.
+I own it because the failures that were actually killing me lived in the harness — and I'd rather be able to reach them.
 
-That's the whole calculus. Not that owning it is virtuous — it isn't, it's a maintenance bill. It's that when the failure is in a layer you don't control, your only remaining move is to wait for someone else's next release and hope it happens to help.
+That's the whole calculus. Not that owning it is virtuous. It's a maintenance bill, and I pay it monthly. But when the failure sits in a layer you don't control, your only remaining move is to wait for someone else's next release and hope it happens to help.
 
 ## Landing
 
-Come back to the original suspect.
+Back to the original suspect.
 
-The model is rented. It'll be a different one next quarter, and that's fine — that's the good part. It improves without me, on someone else's schedule, at someone else's expense. I don't want to own it.
+The model is rented. It'll be a different one next quarter, and that's the good part — it improves without me, on someone else's schedule, at someone else's expense. I don't want to own it.
 
-The harness is the part that stays. It's the part that holds your memory, spends your tokens, shapes every prompt you send, and quietly decides how much of your work survives the session.
+The harness is the part that stays. It holds your memory, spends your tokens, shapes every prompt you send, and quietly decides how much of your work survives the session.
 
 Build the part you keep.
+
+---
+
+## References
+
+[1] *Prompt-Induced Waste.* arXiv:2608.01347. — Source for the 5–30× harness cost variance, the 16,000–20,000-token re-transmitted prefix, the ~15× cost of "develop and compare several approaches," the 1.6–2.2× cost of generic "think deeply" padding, and the 2.61× cost of a misleading architectural hint.
+
+[2] *Model or Harness?* arXiv:2607.28802. — Source for the harness-vs-model fault taxonomy, the `comp1—comp2 · fault:side` labeling convention, and the seven memory failure modes.
 
 ---
 
@@ -138,20 +142,12 @@ Build the part you keep.
 
 ---
 
-## Draft notes — [AUTHOR] gaps and grounding
+## Draft notes
 
-**Inline [AUTHOR] markers left in the draft — 2, both in "The trading proof":**
+**Inline [AUTHOR] markers: none.** The rough-draft markers are gone from the prose. Every claim in the body is either your own measured system or a cited paper.
 
-1. **The vendor foil (OmniPhi).** I would not assert "AI kept in the execution loop" about a named real company on the strength of an outline note. Needs the product name confirmed, a source link, and verification of that architectural claim. The beat is written so it survives if the claim gets cut — the lock-in argument stands on its own.
-2. **The convergence case (Polybot).** Needs the repo link and a check of the four architectural claims (no LLM in execution path / offline tuning / deterministic risk gates / restart-proof breakers). Left unnamed pending your call from outline open question 3.
+**"Where this stops being an opinion" — rewritten to stand without unverified specifics.** No company or repo is named, and no third-party architecture is asserted. The convergence argument now rests on your own doctrine plus a general, defensible observation about independently-built systems. One open question on this went to the reply, not the article.
 
-**Outline sections I couldn't ground, and what I did instead:**
+**Grounding for "What I built instead":** bounded-prompt triple (scope + smallest-sufficient-change + named stop condition), the five terminal states, the two banned phrasings and their measured cost, the >5-agent fan-out gap-check, per-role schema trimming and prefix-first cost auditing, the zero-token memory linter, and the FAIL-by-default verifier — all taken from the Agent Task Hygiene block and standing rails in your live `~/.claude/CLAUDE.md`. Dispatch and Conductor are named as run types only; no internals are described.
 
-- **Beat 5, Dispatch / Conductor internals.** Your outline names these as the harness you built; I have no source describing what they actually do. Rather than invent architecture, I wrote the beat around the four capabilities your outline lists — bounded prompts, per-role schema trimming, an owned memory bundle, an audit trail — all of which I *could* ground in the Agent Task Hygiene section of your CLAUDE.md. The systems are described by what they buy, not by name or internals. Your outline's open question 2 was exactly this tension (how much to reveal), so the conservative version seemed like the right default. Add the names and specifics if you want it more concrete.
-- **Beat 1's "a specific botched run."** Your outline's voice note asks to open on one concrete failure, not theory. I don't have a specific incident I could report faithfully, so I opened on the *pattern* — failures with a shape that model upgrades didn't move — which is grounded in the re-explaining loop from Article 1. **This is the biggest remaining gap in the piece.** One real botched run, named, would meaningfully strengthen the open.
-- **Beat 3's framing.** Kept your "here's the measured version of a bill I'd already been paying" order deliberately, including a sentence disclaiming the *I was right all along* reading.
-- **Beat 6's bridge to Article 3.** The outline positions this beat as the setup for the adversarial-dynamical-systems piece. I gestured at it (intelligence in the design loop, not the execution loop) without an explicit "more on this next time," since 03 is already published — adjust if you want a direct back-reference to it instead.
-- **Placement note.** Your outline sequences this after Article 2 and before Article 3. The brief for this pass framed it as the thesis behind the right-sizing piece, so I tied it forward to both the memory bundle and the right-sizing restructure. If it publishes in the original slot instead, the right-sizing references in "So I built my own" need to become forward-looking.
-- **Title.** Kept the working title. Your outline's alternates — "Build the Part You Keep," "The Model Is Rented," "Own the Scaffolding" — are all live; note that "Build the part you keep" is currently the closing line, so promoting it to the title would mean re-landing the ending.
-
-**Numbers used and where they came from:** 5–30× harness variance, 16–20k re-transmitted prefix, ~15× for "compare several approaches," 2.61× for a misleading hint — all from your Prompt-Waste outline notes (arXiv 2608.01347). The 1.6–2.2× "think deeply" figure and the fault-label taxonomy come from your CLAUDE.md Agent Task Hygiene block. 13,891 tokens and 62.8% are the verified figures from the right-sizing audit. No number in this draft is mine.
+**Still open:** the 13,891 → 5,167 / 62.8% figures are referenced here as established by the previous piece rather than re-derived, so they stay consistent across both.

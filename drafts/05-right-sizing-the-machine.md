@@ -192,6 +192,14 @@ Right-size it, or pay the tax on every turn you take.
 
 ---
 
+## References
+
+[1] Anthropic. *The new rules of context engineering for Claude 5.* 2026. — [needs Thomas confirm: exact post title + URL]
+
+[2] *Prompt-Induced Waste.* arXiv:2608.01347. — Source for the ~15× reasoning-token cost of prompt padding with no accuracy gain.
+
+---
+
 *These field notes feed the monthly Trident Digest — the short-form version of what I'm learning, once a month, for people building alone with AI. Subscribe below, or find me on Threads.*
 
 — *Thomas Adair. Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.*
@@ -204,7 +212,7 @@ Right-size it, or pay the tax on every turn you take.
 
 **Two items needing your sign-off before publish:**
 
-1. **The Anthropic "~80% of Claude Code's system prompt" figure.** From your outline, not from my own read of the post. Confirm the number and framing — and it needs the exact post title + URL for a real citation. Currently referenced descriptively.
+1. **The Anthropic "~80% of Claude Code's system prompt" figure.** From your outline, not from my own read of the post. Confirm the number and framing. Reference [1] is stubbed and carries a `[needs Thomas confirm]` on the exact title + URL — that marker is in the References block, not in the prose.
 2. **The seven skills named in "Where the procedure went."** Your brief gave the count, not the names. I took them from the skills table in your current CLAUDE.md. Count is verified; the specific names are inference.
 
 **Grounding decisions carried forward from the first pass:**

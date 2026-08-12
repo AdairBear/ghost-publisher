@@ -12,11 +12,6 @@ feature: false
 ready: true
 ---
 
-<!-- CTA/VOICE PASS 2026-08-11 — REFINED DRAFT, NOT FOR PUBLICATION AS-IS.
-     Base: drafts/01-persistent-memory-bundle-REWRITE-2026-08-04.md (adjudicated stronger).
-     Grafts from queue/01: the handoff threshold, the "type as failure class" compression.
-     See CHANGELOG.md in this folder. Resolve all [AUTHOR: …] markers before publishing. -->
-
 **By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
 
 *How I keep Claude coherent across model swaps, session death, and long gaps — the substrate everything else in my workflow sits on top of.*
@@ -67,7 +62,7 @@ What I changed was the typing, and I changed it because my failures were typed.
 
 **User** memories hold who I am and how I want to be spoken to. **Feedback** memories hold corrections I don't want to give twice. **Project** memories hold the state of a build in flight. **Reference** memories hold papers and repos with my note about *why* each one matters — the why is the part that makes it a tool instead of a bookmark. **Notes and audits** hold the thinking work.
 
-The types collide more often than that clean list suggests, and how you break the tie decides whether the bundle stays useful. A correction about a specific project looks like both feedback and project state. My tie-breaker: ask whether the thing generalizes past this build. If it does, it's feedback and it outlives the project. If it dies with the repo, it's project. Get that backwards and you either bury a standing rule inside a file nobody opens after the build ships, or you promote a one-off into a law the model will apply everywhere, forever, with total confidence. <!-- [AUTHOR: confirm this is the actual tie-breaker you use, or replace with yours. INFERRED from the type definitions, not observed.] -->
+The types collide more often than that clean list suggests, and how you break the tie decides whether the bundle stays useful. A correction about a specific project looks like both feedback and project state. My tie-breaker: ask whether the thing generalizes past this build. If it does, it's feedback and it outlives the project. If it dies with the repo, it's project. Get that backwards and you either bury a standing rule inside a file nobody opens after the build ships, or you promote a one-off into a law the model will apply everywhere, forever, with total confidence.
 
 Same discipline on the other axis. When a new fact arrives, the default is to **edit the file that already owns that subject**, not to open a new one. New files are for new subjects. That rule is not tidiness — it's the only thing standing between me and three files that each half-remember the same rule and disagree at the edges.
 
@@ -77,7 +72,7 @@ The test I hold a memory file to: could a session that has never met me read thi
 
 The index at the top is the concierge. One line per entry — `[Title](file.md) — one-sentence hook` — and every session opens it first. If nothing in there is relevant, the session goes on about its business. If something is, it opens that one file and reads only what matters. The index doesn't hold the memories. It holds the map.
 
-That "every session opens it first" is doing a lot of work in that paragraph, and it isn't a habit — it's wiring. <!-- [AUTHOR: needs the mechanism, one or two sentences. What actually forces the read on every session — an instruction in the project config, a session-start hook, something else? This is the single most-asked question a reader will have, and right now the essay skips it. Without it, a reader copies the folder and gets nothing.] -->
+That "every session opens it first" is doing a lot of work in that paragraph, and it isn't a habit — it's wiring. Claude Code loads memory files natively: the harness walks `~/.claude/`, concatenates what it finds there — the `MEMORY.md` index included — and every turn opens with that already resident in context. No hook to install, no `@import` line to maintain, no model deciding whether today is the day it reads your notes. "Read the index first" isn't an instruction I give. It's the shape of the context the session wakes up inside.
 
 The whole layer is deliberately old-fashioned. Filesystem, plain text, greppable. It isn't clever and it doesn't need to be. It needs to survive the death of the session that wrote it and be readable by the next one … and it does both, which is more than I can say for anything else I tried.
 
@@ -91,13 +86,13 @@ I already had a VPS running the trading system around the clock. The durable box
 
 So on that VPS I run a small service — a durable, queryable record of decisions, lessons, and state across every project I touch, not just the one on the laptop in front of me — exposed over MCP. Any session, anywhere, can call `brain_digest()` for what's happened lately across the whole ecosystem, or `brain_context("trident-forge")` for what's current on one system.
 
-Two stores raises the obvious question, and it's the one I get asked most: what goes where? The split I run is by *blast radius*. If losing the fact would only cost me on this machine — a local path, a scratch audit, a note about a rig that only exists here — it stays in the bundle. If losing it would cost me anywhere I happen to open a session — a decision, a lesson, the current state of a build — it goes to the brain, and the local file becomes a pointer rather than the truth. Duplicate a fact across both and you've built two sources of truth, which is how you get a session confidently reciting last month. <!-- [AUTHOR: confirm the split. INFERRED from how you describe the two layers; if your real rule is different — e.g. everything goes to the brain and the bundle is a cache — say so, because the reader will copy whatever's on the page.] -->
+Two stores raises the obvious question, and it's the one I get asked most: what goes where? Less a rule than a division of labor. The brain is the cross-project record — decisions, lessons, where a build actually stands — because that's what I need durable and queryable from wherever I happen to be sitting, which is what `brain_digest()` and `brain_context()` are for. The bundle is the per-machine and per-fact layer: who I am, how I want to be written to, the local paths, the corrections that travel everywhere but live perfectly well as text on a disk. What I try to avoid is stating the same fact in full in both places — that's two sources of truth, and it's how you get a session confidently reciting last month.
 
 That's the thing that turns a local folder into an actual substrate. On the laptop the local bundle is thin. The brain is the same brain. The session reconstructs its bearings from the shared source and gets on with it. When a session ends and the transcript evaporates, what it *decided* outlives it.
 
 The brain has its own failure modes — there's a token-drift edge I run a reconciliation script against — but it's built fail-soft on purpose. If the brain is unreachable, sessions fall back to the local bundle and log a warning. Nothing blocks. A memory system that can halt the work is a memory system I'd stop using by Thursday.
 
-Fail-soft has a cost and I'd rather name it than let you discover it. A session that quietly ran on a stale local bundle produces work that *looks* exactly like work done with full context. The warning goes in a log. The output looks fine. So the fallback needs to be visible in the session itself, not just recorded — the model should say it's flying on the thin copy. <!-- [AUTHOR: does the fallback surface to you in-session today, or only in the log? If only the log, this is a real open defect and worth saying so plainly.] -->
+Fail-soft has a cost and I'd rather name it than let you discover it. A session that quietly ran on a stale local bundle produces work that *looks* exactly like work done with full context. The warning goes in a log. The output looks fine. So the fallback needs to be visible in the session itself, not just recorded — the model should say out loud that it's flying on the thin copy. It doesn't, not reliably. Historically that warning has gone to the log and nowhere else, which means the one moment I most need to be told is the moment I'm least likely to notice. That's an open defect. It's mine, and it's on the list.
 
 ## Layer three — the discipline
 
@@ -129,7 +124,7 @@ Once memory lives outside any individual session, everything downstream gets che
 
 **Long projects get cheaper.** A week away no longer costs a re-briefing. The audio-plugin work, the ebook reader, the visual-effects rig I use for DJing, the trading engine — all of them sit in the substrate at once, each one callable without dragging the others into context.
 
-**Long conversations get cheaper.** When a session crosses the threshold where I've watched output start to degrade, the handoff rule fires, it writes a handoff file, and the next session picks the thread up mid-sentence. The threshold is well short of the context limit on purpose — by the time a model is *at* its ceiling, the summary it writes you is already being written by the degraded version of it. <!-- [AUTHOR: the earlier draft named a specific number here. If you're comfortable publishing it, put it back — a threshold is a cue a reader can actually use, and it isn't a flex.] -->
+**Long conversations get cheaper.** At 30% of context remaining, the handoff fires: it writes a handoff file, and the next session picks the thread up mid-sentence. Thirty percent is well short of the ceiling on purpose — by the time a model is *at* its limit, the summary it writes you is already being written by the degraded version of it. That was one of the first moves I made about context deliberately, instead of discovering it afterward in a transcript.
 
 **The writing you're reading got cheaper.** I didn't have to remember how I wanted this to sound. A `user_writing_voice.md` file handed the drafting session the register to reach for — written once, from a calibration I only had to do once.
 
@@ -143,7 +138,7 @@ Nothing this useful is free. Three bills come due.
 
 **Compacting the index.** The whole thing rests on the index being small enough to read in one shot. Past a certain size the tail entries slide out of the read window, and nothing errors, and nothing warns you. The session simply stops seeing your newest memories and carries on. I hit that ceiling again recently.
 
-That's a silent failure, and silent failures need a tell, so here's mine: the session behaves like the newest memory doesn't exist. I ask about something I wrote down two days ago and get a blank. <!-- [AUTHOR: is that actually how you catch it, or do you have a real check — a line count, a periodic read-back test? If there's a mechanical check, name it; if there isn't, say that plainly, because "I notice eventually" is an honest answer and a better one than implying a monitor exists.] --> It will be a silent failure the next time too.
+That's a silent failure, and silent failures need a tell. There's a size check now — a warning fires as the index closes on the read-window limit, which sits around 24KB. Before it, the only tell was a session going blank on a recent memory: I'd ask about something I wrote down two days ago and get nothing back. That is a terrible monitor. It's the entire reason the size check exists.
 
 **Reconciling contradictions.** A feedback rule and a project decision can quietly disagree with each other. The verify-gate catches some before they reach code. The weekly pass catches more. Neither catches everything, and I know it. A graph-resolver would be the real answer … someday it'll exist.
 

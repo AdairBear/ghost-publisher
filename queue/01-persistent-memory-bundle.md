@@ -1,7 +1,7 @@
 ---
 title: "The Persistent Memory Bundle"
 slug: "persistent-memory-bundle"
-excerpt: "How I keep Claude coherent across model swaps, session death, and long gaps — three layers, months of survival, and the discipline that makes them work."
+excerpt: "How I keep Claude coherent across model swaps, session death, and long gaps — three layers, and the discipline that makes them work."
 tags:
   - AI
   - solo-builder
@@ -18,21 +18,25 @@ ready: true
 
 ---
 
-A friend got me interested in day trading in August of 2025. He pitched it the way everyone pitches it — learn this and you can replace your paycheck — the same rigamarole the course sellers run. I had always been somewhat interested anyway. At the same time, by happenstance, I was learning that people were using AI to write real software. I had never built a program in my life, unless you count a self-hosted Pac-Man clone I made for my kids.
+A friend got me into day trading in August of 2025. He pitched it the way everyone pitches it — learn this and replace your paycheck — the same rigamarole the course sellers run. I knew the pitch for what it was. But I'd been curious about trading for a while, and this time it came from someone I trusted — so I followed him in.
 
-The two converged. When I found out you could write a strategy in Pine Script, wire it through TradersPost into a prop firm account, and let it trade, a very large lightbulb went off.
+Around the same time I found out people were writing real software with AI. I had never built a program in my life. There was a Pac-Man clone I self-hosted for my kids, and I'm not sure that counts.
 
-None of it was agentic. My actual process was: open a chat, explain everything from the beginning, get some code, close the chat, lose everything, do it again tomorrow. When the community tore open around OpenClaw I tried it, then MoltBot, then Hermes, which stuck. Every time the tooling changed, the thing I lost was the same — everything the last version of me had worked out.
+Then I learned you could write a strategy in Pine Script, wire it through TradersPost into a prop firm account, and let it trade. That was the lightbulb. Not "I could make money" — I could build something, and it would do the thing while I slept.
 
-I have spent the past year building a live-money trading system and the AI substrate around it. No revenue yet. I would rather it prove itself before I decide what it becomes. The single most important architectural decision I made along the way is that memory does not live inside the model.
+What I actually built, for months, was a habit: open a chat, explain everything from the beginning, get some code, close the chat, lose everything, start over tomorrow. None of it was agentic. When the community tore open around OpenClaw I tried it, then MoltBot, then Hermes, which stuck. The tooling kept changing and the loss never did.
 
-Not inside the current session. Not inside the chat window. Not inside whichever context length the vendor is advertising this quarter. Memory lives in files I own, on infrastructure I control, updated on a discipline, and consulted by every session that opens on my machine or my server.
+I've spent the past year building a live-money trading system and the AI substrate around it. No revenue yet. I'd rather it prove itself before I decide what it becomes.
 
-Three layers. Months of operation, hundreds of session terminations, dozens of model rotations, laptop closures across weeks-long gaps, one VPS reboot cycle. What follows is what each layer is and what forced it into existence.
+The one architectural decision I'd defend without hesitating is this: memory does not live inside the model.
 
-## Layer one — the local memory bundle
+Not in the session. Not in the chat window. Not in whichever context length the vendor is advertising this quarter — that number climbs every few months and it has never once been the thing that saved me. Memory lives in files I own, on hardware I control, updated on a discipline, and read by every session that opens.
 
-The first layer is a directory of Markdown files under `~/agent/memory/`.
+Three layers do that work. Here's what each one is, and what broke to force it into existence.
+
+## Layer one — the local bundle
+
+The first layer is a directory of Markdown files.
 
 ```
 ~/agent/memory/
@@ -45,79 +49,134 @@ The first layer is a directory of Markdown files under `~/agent/memory/`.
 ├── reference_karpathy_claude_md.md
 ├── notes_agentic_design_patterns_ch11.md
 ├── audit_gap_verification_2026-06-25.md
-└── … about two hundred more files
+└── … and a good many more
 ```
 
-I did not invent this shape. Andrej Karpathy published a pattern for an LLM wiki — an index file, a set of small linked articles, wikilinks between them — and that gist is the direct ancestor of what sits on my disk. There is a real difference between taking someone's work and taking someone's idea and building your own thing on it. This is the second one. Credit where credit is due.
+That's it. That's the whole shape. A folder, some text files, and an index at the top that knows where everything is.
 
-What I changed was the typing, and I changed it because my failures were typed. "The model forgot something" was never one problem. Forgetting who I am, forgetting a correction, forgetting where a build stands, and forgetting a paper I meant to keep are four different failures, and they have to be findable by kind. So each file carries front-matter with a `type`, and the types are the failure classes. **User** memories hold who I am and how I want to be spoken to. **Feedback** memories hold corrections I do not want to give twice. **Project** memories hold the state of a build in flight. **Reference** memories hold papers and repos with my note about *why* each one matters. **Notes and audits** hold the thinking work.
+I didn't come up with this shape. Andrej Karpathy put out a gist for an LLM wiki — an index file, a pile of small linked articles, wikilinks running between them — and what's on my disk is a direct descendant of it. I read it, recognized it as the answer to a problem I'd been losing to for months, and built my own thing on the bones of his idea. That's a different act than taking someone's work, and I want to be clear which one this is. He gave the shape away for free. I'd rather say his name than quietly absorb it … so: thank you, Andrej.
 
-Every file has one job, reads like a note from me to a future me, and is small enough to read inside a single request.
+What I changed was the typing, and I changed it because my failures were typed.
 
-The top-level index is the concierge. One line per entry, `[Title](file.md) — one-sentence hook`. Every session opens it first. If nothing there is relevant, the session proceeds on its own attention; if something is, it opens that one file and reads only what matters. The index does not hold the memories. It holds the map.
+"The model forgot something" was never one problem. Forgetting who I am, forgetting a correction I'd already given, forgetting where a build stands, forgetting a paper I meant to keep — those are four different failures with four different costs, and if you can't tell them apart you can't fix any of them. So every file carries front-matter with a `type`, and the types *are* the failure classes.
 
-The whole layer is deliberately old-fashioned — filesystem, plain text, greppable. It is not fancy and does not need to be. It needs to survive session death and be readable by the next session. It does both.
+**User** memories hold who I am and how I want to be spoken to. **Feedback** memories hold corrections I don't want to give twice. **Project** memories hold the state of a build in flight. **Reference** memories hold papers and repos with my note about *why* each one matters — the why is the part that makes it a tool instead of a bookmark. **Notes and audits** hold the thinking work.
+
+The types collide more often than that clean list suggests, and how you break the tie decides whether the bundle stays useful. A correction about a specific project looks like both feedback and project state. My tie-breaker: ask whether the thing generalizes past this build. If it does, it's feedback and it outlives the project. If it dies with the repo, it's project. Get that backwards and you either bury a standing rule inside a file nobody opens after the build ships, or you promote a one-off into a law the model will apply everywhere, forever, with total confidence.
+
+Same discipline on the other axis. When a new fact arrives, the default is to **edit the file that already owns that subject**, not to open a new one. New files are for new subjects. That rule is not tidiness — it's the only thing standing between me and three files that each half-remember the same rule and disagree at the edges.
+
+Every file has one job. Reads like a note from me to a future me. Small enough to open inside a single request.
+
+The test I hold a memory file to: could a session that has never met me read this one file and act correctly, without asking me a follow-up question? If it needs the conversation that produced it, it isn't a memory. It's a transcript fragment with delusions of permanence.
+
+The index at the top is the concierge. One line per entry — `[Title](file.md) — one-sentence hook` — and every session opens it first. If nothing in there is relevant, the session goes on about its business. If something is, it opens that one file and reads only what matters. The index doesn't hold the memories. It holds the map.
+
+That "every session opens it first" is doing a lot of work in that paragraph, and it isn't a habit — it's wiring. Claude Code loads memory files natively: the harness walks `~/.claude/`, concatenates what it finds there — the `MEMORY.md` index included — and every turn opens with that already resident in context. No hook to install, no `@import` line to maintain, no model deciding whether today is the day it reads your notes. "Read the index first" isn't an instruction I give. It's the shape of the context the session wakes up inside.
+
+The whole layer is deliberately old-fashioned. Filesystem, plain text, greppable. It isn't clever and it doesn't need to be. It needs to survive the death of the session that wrote it and be readable by the next one … and it does both, which is more than I can say for anything else I tried.
 
 ## Layer two — the brain
 
-The second layer is the brain server, and it exists because the first layer is only as portable as the machine it sits on.
+The second layer exists because the first one is only as portable as the machine it's sitting on.
 
-The bundle solved session death. It did not solve me. I work across a desktop and a laptop, and the sessions that mattered were not always on the machine holding the files. I already had a VPS running the trading system around the clock, so the durable box was sitting there either way. Putting shared memory on it was less a design decision than noticing the obvious.
+The bundle solved session death. It did not solve me. I work across a desktop and a laptop, and the sessions that mattered were never reliably on the machine holding the files. I'd walk into the other room, open a session, and be right back where I started — explaining myself to a model that had every reason to know better.
 
-On that VPS I run a lightweight service holding a durable, queryable record of decisions, lessons, and state across every project I work on — not just the one on the laptop in front of me — exposed over MCP. Any Claude session, anywhere, can call `brain_digest()` for what has happened lately across the whole ecosystem, or `brain_context("trident-forge")` for what is current on one system.
+I already had a VPS running the trading system around the clock. The durable box was sitting there either way. Putting shared memory on it was less a design decision than noticing the obvious.
 
-That is what turns the local bundle from a per-machine artifact into a real substrate. On the laptop the local bundle is thin, but the brain is the same, and the session reconstructs its bearings from the shared source. When a session ends and the transcript is gone, what it decided outlives it.
+So on that VPS I run a small service — a durable, queryable record of decisions, lessons, and state across every project I touch, not just the one on the laptop in front of me — exposed over MCP. Any session, anywhere, can call `brain_digest()` for what's happened lately across the whole ecosystem, or `brain_context("trident-forge")` for what's current on one system.
 
-The brain has its own failure modes — I run a reconciliation script for a known token-drift edge — but it is built fail-soft on purpose. If the brain is unreachable, sessions proceed on the local bundle and log a warning. Nothing blocks.
+Two stores raises the obvious question, and it's the one I get asked most: what goes where? Less a rule than a division of labor. The brain is the cross-project record — decisions, lessons, where a build actually stands — because that's what I need durable and queryable from wherever I happen to be sitting, which is what `brain_digest()` and `brain_context()` are for. The bundle is the per-machine and per-fact layer: who I am, how I want to be written to, the local paths, the corrections that travel everywhere but live perfectly well as text on a disk. What I try to avoid is stating the same fact in full in both places — that's two sources of truth, and it's how you get a session confidently reciting last month.
+
+That's the thing that turns a local folder into an actual substrate. On the laptop the local bundle is thin. The brain is the same brain. The session reconstructs its bearings from the shared source and gets on with it. When a session ends and the transcript evaporates, what it *decided* outlives it.
+
+The brain has its own failure modes — there's a token-drift edge I run a reconciliation script against — but it's built fail-soft on purpose. If the brain is unreachable, sessions fall back to the local bundle and log a warning. Nothing blocks. A memory system that can halt the work is a memory system I'd stop using by Thursday.
+
+Fail-soft has a cost and I'd rather name it than let you discover it. A session that quietly ran on a stale local bundle produces work that *looks* exactly like work done with full context. The warning goes in a log. The output looks fine. So the fallback needs to be visible in the session itself, not just recorded — the model should say out loud that it's flying on the thin copy. It doesn't, not reliably. Historically that warning has gone to the log and nowhere else, which means the one moment I most need to be told is the moment I'm least likely to notice. That's an open defect. It's mine, and it's on the list.
 
 ## Layer three — the discipline
 
-The third layer keeps the first two useful, and it is the one people underestimate.
+The third layer is the one people underestimate, and it's the one that actually decides whether the other two are worth anything.
 
-Files and a server do not create memory. What creates memory is writing things down at the moment they happen, in the format that will be consultable later, at a cadence that keeps up with the work. I learned that the way you learn most things — by having files that were technically present and quietly wrong.
+Files and a server do not create memory. What creates memory is writing things down at the moment they happen, in the shape that will be readable later, at a cadence that keeps up with the work. I learned that the way you learn most things — by having files that were technically present and quietly wrong, and by trusting them.
 
-Four rules govern the cadence. Every one of them is scar tissue:
+The rules that govern the cadence are all scar tissue.
 
-1. **The moment a session corrects a class of behavior, a feedback memory gets written.** Not later. If I have to correct the same thing twice, the second correction is a bug in my memory bundle, not a bug in the model. That reframing is what turned correcting the AI from a chore into maintenance on a system I own.
-2. **The moment a project decision locks, the project file gets updated** — decision, date, current-truth prose. Otherwise the next session picks up a plan I have already abandoned and executes it faithfully.
-3. **The moment a paper, a repo, or a piece of finished work earns a second look, it gets saved in the same session.** I finished a substantial essay once and wrote no memory for it. Six days of sessions had no idea it existed, and I had to re-explain a finished thing to my own system. A reference I mean to save "next time" is a reference I have already lost.
-4. **Every five to ten substantive exchanges, the session checkpoints anything worth surviving.** Added the day I lost about four hours to a session that dropped context without warning.
+**One. The moment a session corrects a *class* of behavior, a feedback memory gets written.** Not later. If I have to correct the same thing twice, the second correction is a bug in my bundle, not a bug in the model. That reframe is the single most useful thing in this essay — it turned correcting the AI from a chore I resented into maintenance on a system I own.
 
-Without the discipline, files exist but they lie. With it, files are current-truth, and the substrate carries real weight.
+The word doing the work in that rule is *class*, and I put it in italics because getting it wrong is the most common way this whole system rots. Not every correction earns a file. "Wrong variable name" is a correction. "Stop hedging every claim" is a class. The test I use: would I give this same correction again next week, on a different task, in a different repo? If yes, write it. If no, fix it in the chat and let it die there. Write everything and the index bloats until the tail falls out of the read window — which is a cost I pay later in this same essay, and it is caused, precisely, by being generous with this rule.
 
-## What this substrate has done for the work
+**Two. The moment a project decision locks, the project file gets updated.** Decision, date, current-truth prose. Skip it and the next session picks up a plan I already abandoned and executes it faithfully, at speed, with total confidence. There is nothing quite like watching a machine do excellent work on last week's plan.
 
-Once memory lives outside every individual session, every downstream decision gets cheaper.
+Note *current-truth prose*, not a changelog. The file says what is true now. If the history matters — and sometimes it does, because "we tried that and here's why it failed" is worth more than the decision itself — it goes in a line underneath, dated, marked as history. A project file that grows into a running log stops being readable in one shot, and a memory nobody can read in one shot is a memory that doesn't get read.
 
-**Model routing gets cheaper.** A lighter, faster model can take a targeted task without re-learning who I am, because who I am is a file it can open. When live-money code needs the strongest model, I route deliberately — and that routing rule lives in the bundle too.
+**Three. The moment a paper, a repo, or a finished piece of work earns a second look, it gets saved in that same session.** I finished a substantial essay once and wrote no memory for it. Days of sessions had no idea it existed. I had to re-explain a *finished thing* to my own system, which is a particular kind of humbling. A reference I mean to save "next time" is a reference I have already lost.
 
-**Long projects get cheaper.** A week away no longer forces a re-briefing. My audio-plugin project, my ebook reader, my visual-effects rig for DJing, and my trading engine all sit in the substrate at once, each callable without polluting the others.
+**Four. Every few substantive exchanges, the session checkpoints anything worth surviving.** Added the day I lost an afternoon to a session that dropped context without warning and kept talking like nothing had happened.
 
-**Long conversations get cheaper.** When a session nears its context ceiling, the handoff-at-30-percent rule fires, it writes a handoff file, and the next session picks up the thread.
+Without the discipline, the files exist and they lie. With it, the files are current-truth, and the whole substrate carries weight.
 
-**The writing you are reading got cheaper.** I did not have to remember how I wanted this to sound. A `user_writing_voice.md` file gave the drafting session the register to reach for — written once, from a calibration I only had to do once.
+## What this bought me
 
-**And most importantly, it compounds.** Every deep read lands as a reference or a note before the session ends. Every rule I lock lands as feedback. What I have learned over the past year is not scattered across dead transcripts — it is consolidated, cross-linked, and queryable.
+Once memory lives outside any individual session, everything downstream gets cheaper.
 
-## The maintenance costs
+**Model routing gets cheaper.** A lighter, faster model can take a targeted job without re-learning who I am — because who I am is a file it can open. When live-money code needs the strongest model I have, I route deliberately. That routing rule lives in the bundle too, which means I don't have to remember to remember it.
 
-Nothing this useful is free. Three costs I pay to keep it healthy.
+**Long projects get cheaper.** A week away no longer costs a re-briefing. The audio-plugin work, the ebook reader, the visual-effects rig I use for DJing, the trading engine — all of them sit in the substrate at once, each one callable without dragging the others into context.
 
-**Pruning against rot.** A rule that was correct in April can be wrong in July. If old memories are not corrected or retired, future sessions follow them dutifully and produce work that is confidently obsolete. A weekly pass is how I fight it.
+**Long conversations get cheaper.** At 30% of context remaining, the handoff fires: it writes a handoff file, and the next session picks the thread up mid-sentence. Thirty percent is well short of the ceiling on purpose — by the time a model is *at* its limit, the summary it writes you is already being written by the degraded version of it. That was one of the first moves I made about context deliberately, instead of discovering it afterward in a transcript.
 
-**Compacting the index.** The system relies on the index being small enough to read in one shot. Past a certain size — I hit that ceiling again this week — the tail entries silently fall out of the read window.
+**The writing you're reading got cheaper.** I didn't have to remember how I wanted this to sound. A `user_writing_voice.md` file handed the drafting session the register to reach for — written once, from a calibration I only had to do once.
 
-**Reconciling contradictions.** A feedback rule and a project decision can quietly disagree. The verify-gate catches some before it reaches code; the weekly pass catches more. Neither catches everything. A graph-resolver would be ideal and someday will exist.
+**And it compounds.** Every deep read lands as a reference or a note before the session closes. Every rule I lock lands as feedback. What I've learned this past year isn't scattered across dead transcripts. It's consolidated, cross-linked, and queryable — which is a sentence I could not have written a year ago about anything I owned.
 
-The substrate does not stop working when these accrue; it works less well until they are paid. Gardening, not firefighting.
+## What it costs
+
+Nothing this useful is free. Three bills come due.
+
+**Pruning against rot.** A rule that was right in spring can be wrong by summer. If old memories don't get corrected or retired, future sessions follow them dutifully and produce work that is confidently obsolete — the worst failure mode in the whole system, because it *looks* like competence. A weekly pass is how I fight it.
+
+**Compacting the index.** The whole thing rests on the index being small enough to read in one shot. Past a certain size the tail entries slide out of the read window, and nothing errors, and nothing warns you. The session simply stops seeing your newest memories and carries on. I hit that ceiling again recently.
+
+That's a silent failure, and silent failures need a tell. There's a size check now — a warning fires as the index closes on the read-window limit, which sits around 24KB. Before it, the only tell was a session going blank on a recent memory: I'd ask about something I wrote down two days ago and get nothing back. That is a terrible monitor. It's the entire reason the size check exists.
+
+**Reconciling contradictions.** A feedback rule and a project decision can quietly disagree with each other. The verify-gate catches some before they reach code. The weekly pass catches more. Neither catches everything, and I know it. A graph-resolver would be the real answer … someday it'll exist.
+
+The substrate doesn't stop working when these accrue. It works *less well* until they're paid. Gardening, not firefighting.
+
+## The easier paths
+
+There's an obvious objection and I'd rather say it out loud than let it sit there: none of this is necessary. The vendors ship memory now. ChatGPT remembers you between chats. Claude carries context across a project. There are products whose entire job is to be your agent's memory, and there are vector stores if you want retrieval with some real machinery behind it. And there's the option nobody puts on the list, which is doing none of it and just re-explaining yourself each time, which costs about ninety seconds and works fine.
+
+Those are real answers. I want to be careful here, because it's cheap to build a strawman out of the easy option and knock it down to justify the hard one. If your work lives inside one tool, on one machine, and it's mostly conversation — built-in memory is better than what I built. Zero setup. No maintenance. It works the day you switch it on and it keeps working without a weekly pass. Building a memory substrate out of principle when a checkbox would do is just a more elaborate way of not getting your work done.
+
+Here's the line.
+
+Easy buys convenience. This buys ownership. Those aren't the same purchase.
+
+Vendor memory is a feature of the vendor's product. It lives on their side, in a shape you can't read, on terms they set, and it goes wherever their roadmap goes. You can't open it. You can't grep it. You can't fix a wrong fact by editing a sentence — and most of the time you can't even see what it decided to remember about you. Then one day you leave, or the tool you're on stops being the tool everyone's on, and it doesn't come with you.
+
+I know how that ends because I already lived it. OpenClaw, then MoltBot, then Hermes — inside a year. Every one of them was the obvious choice at the time. Every switch cost me everything the last one held. The tooling kept changing and the loss never did. That's the sentence this whole essay grew out of. The easy options weren't wrong; they were fine, right up until the morning they were gone, and there was no version of "fine" that survived the swap.
+
+The files survived it. Model rotations, tool rotations, months of gap. A directory of Markdown doesn't care who's winning this quarter.
+
+So if you want easy, take easy. I mean that with no edge on it at all. Most people should — and the ones who should aren't reading an essay about memory architecture on a Tuesday. This is for the people who already got burned by easy. Who put a year of context somewhere convenient, watched it evaporate when the tool changed, and decided they'd rather pay a weekly maintenance bill than pay that one again.
 
 ## Why the architecture holds
 
-The best proof I have is unremarkable, which is the point. I ran a machine-health diagnostic one week, wrote down what I found, and did nothing about it. A week later a different session on the far side of that gap opened the file, knew exactly what state the machine had been left in, and picked the work up mid-thought. Nothing heroic happened. Something simply did not have to be re-explained.
+The best proof I have is completely unremarkable, which is exactly the point.
 
-The three layers are what make that unremarkable. The local bundle keeps per-machine detail close and greppable. The brain keeps cross-machine truth durable and portable. The discipline keeps both current. Take one away and the whole thing degrades.
+I ran a machine-health diagnostic one week, wrote down what I found, and then did nothing about it. Life happened. A week later a different session, on the far side of that gap, opened the file, knew precisely what state the machine had been left in, and picked the work up mid-thought. Nothing heroic occurred. Something simply did not have to be re-explained.
 
-If you are building alone with AI over anything longer than a single sitting, the answer to *"how do I keep this coherent"* is not a bigger model, a longer context window, or a smarter chat UI. It is a memory system that lives outside any individual session, that you own end-to-end, and that you write to on a discipline. It does not have to be Markdown. It does not have to be a VPS. It does have to survive session death and be read by the next session, not just written for you.
+That's the whole return. Not a demo, not a benchmark — an absence. The re-briefing that didn't happen.
+
+I'll say what would change my mind, since I'm asking you to take an anecdote as evidence. If a cold session on a machine I haven't touched in a month opened the index, read the files, and still got the state of a project wrong — not missing, *wrong* — the architecture would be the thing at fault, not the discipline. That hasn't happened. The failures I do get are the ones named above: stale, silent, out of the window. Every one of them is a maintenance bill I skipped, and every one of them is visible in a file I can open and fix myself. That's the actual argument. Not that it never fails — that when it fails, the failure is mine and it's in reach.
+
+The three layers are what make it unremarkable. The local bundle keeps per-machine detail close and greppable. The brain keeps cross-machine truth durable and portable. The discipline keeps both of them honest. Take any one away and the other two degrade into a folder of plausible-looking lies.
+
+If you're building alone with AI across anything longer than a single sitting, the answer to *"how do I keep this coherent"* is not a bigger model. It's not a longer context window and it's not a smarter chat UI. It's a memory system that lives outside any individual session, that you own end to end, and that you write to on a discipline you actually keep.
+
+It doesn't have to be Markdown. It doesn't have to be a VPS. It does have to survive session death, and it does have to be *read* by the next session — not merely written for you.
 
 The rest of what I build sits on top of this.
 

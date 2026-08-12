@@ -12,14 +12,6 @@ feature: false
 ready: true
 ---
 
-<!-- CTA/VOICE PASS 2026-08-11 — REFINED DRAFT, NOT FOR PUBLICATION AS-IS.
-     This piece was already the most epistemically disciplined of the four (confidence
-     tags, footnotes, disclosure), so the pass is surgical rather than structural.
-     Main additions: the enforcement mechanism behind the fire-alarm channel (5.1),
-     the revocation-as-DoS rebuttal (5.3), the undefined principal boundary (5.4),
-     rate-vs-event alarming (5.5), the law-vs-signature disanalogy (§4), and kill
-     criteria for the product (§7). See CHANGELOG.md. Resolve all [AUTHOR: …] markers. -->
-
 **By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
 
 *What a live-trading systems engineer sees in AP2 and x402*
@@ -156,7 +148,7 @@ In my orchestrator, the answer is a component whose whole job is the aggregate v
 
 Two things have to be pinned down before anyone can build that component, and neither is pinned down today.
 
-**Who is the principal?** I slid from person to household to firm in one sentence above, and the slide hides a real hole. A person is a clean unit — one identity, one set of credentials. A household is two adults with a shared budget, separate agents, separate credentials, and one bank account that both sets of agents can drain. A firm is that with an org chart on top. AP2's mandate chain runs from a principal to an agent; it does not, as far as I can find, define a principal that spans identities. Aggregate exposure across a *household* is therefore not merely unimplemented — the entity it would be aggregating over doesn't exist in the model. <!-- [AUTHOR: worth one pass through the spec's identity/principal definitions to confirm before publishing. If AP2 does define a multi-identity principal, this finding needs to soften to "under-specified" rather than "absent."] -->
+**Who is the principal?** I slid from person to household to firm in one sentence above, and the slide hides a real hole. A person is a clean unit — one identity, one set of credentials. A household is two adults with a shared budget, separate agents, separate credentials, and one bank account that both sets of agents can drain. A firm is that with an org chart on top. AP2's mandate chain runs from a principal to an agent; it does not, as far as I can find, define a principal that spans identities. Aggregate exposure across a *household* is therefore not merely unimplemented — as far as I can tell, the entity it would be aggregating over isn't in the model at all. That is a claim about an absence, which is the kind of claim I'm most likely to get wrong: if the spec does define a multi-identity principal and I've walked past it, this finding softens to "under-specified" and I'd want the correction.
 
 **Sum of what?** "Total exposure" is two different numbers and mixing them is how you build a dashboard nobody trusts. There's *committed* authority — the ceiling of everything currently authorized, which is what tells you the worst case. And there's *velocity* — how fast it's actually being drawn, which is what tells you whether today is unusual. A principal with a large committed ceiling and near-zero velocity is fine. A principal with a modest ceiling and a velocity spike is the incident. Watch only the ceiling and you'll alarm on nothing; watch only the velocity and you'll miss the day every agent decides to spend at once.
 
@@ -220,7 +212,7 @@ Build order: months one and two, the ledger and the reconciler against x402 test
 
 Would it find customers? [GUESS — tagged as one.] The households aren't feeling this pain yet. But every enterprise that lets agents spend, every prop firm that lets agents trade, and — soon enough — every regulator that lets either, is going to go looking for the component that answers *"what is the sum of what we've authorized, and how fast can we take it all back?"* I know the shape of that component because I operate one. It has never once been the part of the system I regretted building.
 
-And since I've spent this whole essay arguing that a claim is only worth as much as the thing that could falsify it, here is what kills this product rather than what launches it. If AP2 ships a revocation primitive with a mandated out-of-band channel, item three stops being a product and becomes a conformance test — good outcome, wrong business. If the major credentials providers converge on a union view across agents, item two evaporates the same way. If enterprises decide the answer is "one vendor's agent runtime for everything," the aggregation problem gets solved by monoculture rather than by tooling, and the sentinel is solving a problem nobody has. Any of those three and I'd rather be the person who wrote the conformance suite than the person still selling the ledger. <!-- [AUTHOR: keep or cut — it's a strong credibility move given §8, but it's also you talking yourself out of a product in public. Your call.] -->
+And since I've spent this whole essay arguing that a claim is only worth as much as the thing that could falsify it, here is what kills this product rather than what launches it. If AP2 ships a revocation primitive with a mandated out-of-band channel, item three stops being a product and becomes a conformance test — good outcome, wrong business. If the major credentials providers converge on a union view across agents, item two evaporates the same way. If enterprises decide the answer is "one vendor's agent runtime for everything," the aggregation problem gets solved by monoculture rather than by tooling, and the sentinel is solving a problem nobody has. Any of those three and I'd rather be the person who wrote the conformance suite than the person still selling the ledger.
 
 ---
 

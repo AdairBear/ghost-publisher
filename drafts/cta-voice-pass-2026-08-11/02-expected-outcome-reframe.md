@@ -12,13 +12,6 @@ feature: false
 ready: true
 ---
 
-<!-- CTA/VOICE PASS 2026-08-11 — REFINED DRAFT, NOT FOR PUBLICATION AS-IS.
-     SEQUENCING CONFLICT — read this first: the original draft is subtitled "First in a
-     series" and lists "the persistent memory bundle" as an UPCOMING piece. In the locked
-     queue, the memory bundle ships first and this ships second. This draft is rewritten
-     for the locked order (memory piece already out). If you'd rather keep the original
-     framing, renumber instead. See CHANGELOG.md. Resolve all [AUTHOR: …] markers. -->
-
 **By Thomas Adair.** Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.
 
 *Field notes on what actually works.*
@@ -114,7 +107,7 @@ Three different methods in a row is not luck, and it is not taste. Looking back 
 
 **The thing is there, it's right, and it can't be reached.** Correct in one place, absent in another. Not a content problem at all. The method is transport: move it, mirror it, serve it. Checkpoint four.
 
-I did not have that rule when I was living it — I found each method by walking into the wall it was shaped like. But it holds on every case I can find in my own work, and it is the difference between trying variations and changing weapons. <!-- [AUTHOR: this three-shape rule is INFERRED from your three cases. It's the highest-value addition in the piece if it's true, and the most dangerous if it isn't. Check it against a fourth case — the Trident v2 migration below, or anything else — before you publish it as a rule. If it only fits these three, demote it to an observation about these three.] -->
+I did not have that pattern when I was living it — I found each method by walking into the wall it was shaped like. And I'm not going to hand it to you as a law. Three cases is three cases, and I haven't run it against enough of my own work to call it more than an observation about these three. But it's the observation that changed how I get unstuck, and it is the difference between trying variations and changing weapons.
 
 That is what changed for me. Persistence stopped meaning *try the same thing again, harder* and started meaning *which check failed, and what shape did the failure have?* The first version of persistence is stubbornness. The second one compounds.
 
@@ -136,7 +129,9 @@ Early on I compiled a signal pipeline I called the Prop Relay — strategies wri
 
 The old framing was *I want to migrate my live strategies to v2.* No endpoint. Weeks of work with no way to say whether the week counted.
 
-The new framing: *the expected outcome is a set of accumulated parity days at a profit factor above a stated floor, with an information-coefficient half-life above a stated floor, verified by a parity register that compares v2's output to v1's output on identical historical data.* <!-- [AUTHOR: "a stated floor" twice is the essay hedging where the essay is arguing against hedging. Either name the two numbers, or say in one clause why you're not naming them — a reader will notice that a piece about writing checkable targets declines to show its own. Naming them is stronger.] -->
+The new framing: *the expected outcome is a set of accumulated parity days at a profit factor above a stated floor, with an information-coefficient half-life above a stated floor, verified by a parity register that compares v2's output to v1's output on identical historical data.*
+
+Both floors are specific numbers, written down before the work started. I'm not printing them here — they're strategy-adjacent and this is a public essay — and I'd rather say that plainly than let "a stated floor" read as vagueness in a piece arguing against exactly that. The number is what makes the target closable. Which number is mine.
 
 That is a great deal more arithmetic than the memory problem, and it is the identical move. Old framing, no closable endpoint. New framing, a specific file with specific numbers to hit. The register had to be designed before it could be used, which is real work — and that is the honest cost of this method, not a footnote to it. Sometimes the verification is a bigger build than the thing you were trying to verify. You pay it anyway, because the alternative is paying for weeks you can't account for.
 

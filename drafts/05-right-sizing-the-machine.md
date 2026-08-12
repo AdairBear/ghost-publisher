@@ -26,7 +26,7 @@ Those two things collided into one specific idea: write a strategy in Pine Scrip
 
 What I've built in the year since is a live-money trading system and the entire AI substrate around it.
 
-The substrate grew in layers, and every layer arrived because something broke first. For months the whole workflow was: open a chat, explain everything from the beginning, get some code, close the chat, lose it all, start over tomorrow. Then the tooling churned under me — OpenClaw, then MoltBot, then Hermes, inside a single year, each one the obvious choice at the time and each switch costing me everything the last one held.
+The substrate grew in layers, and every layer arrived because something broke first. For months the whole workflow was: open a chat, explain everything from the beginning, get some code, close the chat, lose it all, start over tomorrow. Then the tooling churned under me — OpenClaw, then PicoClaw, then Hermes, inside a single year, each one the obvious choice at the time and each switch costing me everything the last one held.
 
 That's what forced the memory bundle. Files I own, on hardware I control, read by every session that opens. That was the last field note, and it's the substrate the rest of this sits on.
 
@@ -60,7 +60,7 @@ I'd taken a pass at this exact layer the week before. It didn't fully hold — a
 
 What I was missing was a mechanism. A reason to believe a cut was safe, and a rule for deciding what goes where.
 
-That's what the reading gave me. Anthropic put out a post on the new rules of context engineering for Claude 5, and the claim that stopped me was that they cut something like 80% of Claude Code's own system prompt and the newer models came out BETTER — not worse. Alongside it, the Prompt-Induced Waste paper (arXiv 2608.01347), which prices what over-stuffed and conflicting instructions actually cost you: roughly 15× the reasoning tokens on certain prompt padding, with no accuracy gain to show for it.
+That's what the reading gave me. Anthropic put out a post on the new rules of context engineering for Claude 5 [1], and the claim that stopped me was that they cut something like 80% of Claude Code's own system prompt and the newer models came out BETTER — not worse. Alongside it, the Prompt-Induced Waste paper [2], which prices what over-stuffed and conflicting instructions actually cost you: roughly 15× the reasoning tokens on certain prompt padding, with no accuracy gain to show for it.
 
 So: the discipline is why I was in there. The research is what made this pass stick.
 
@@ -130,7 +130,7 @@ There's **who I am and what must never happen** — always true, always resident
 
 And there's **procedure** — situational, real, worth keeping, and dead weight on every turn that doesn't need it.
 
-Anthropic's post hands you the sorting test in a single line: *could the model figure this out on its own? If yes, cut it.*
+Anthropic's post [1] hands you the sorting test in a single line: *could the model figure this out on its own? If yes, cut it.*
 
 Applied honestly, most of the weight failed that test on contact. And my actual rules passed it — which means the restructure's first job was to write them in for the first time.
 

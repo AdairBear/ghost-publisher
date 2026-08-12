@@ -24,7 +24,7 @@ Around the same time I found out people were writing real software with AI. I ha
 
 Then I learned you could write a strategy in Pine Script, wire it through TradersPost into a prop firm account, and let it trade. That was the lightbulb. Not "I could make money" — I could build something, and it would do the thing while I slept.
 
-What I actually built, for months, was a habit: open a chat, explain everything from the beginning, get some code, close the chat, lose everything, start over tomorrow. None of it was agentic. When the community tore open around OpenClaw I tried it, then MoltBot, then Hermes, which stuck. The tooling kept changing and the loss never did.
+What I actually built, for months, was a habit: open a chat, explain everything from the beginning, get some code, close the chat, lose everything, start over tomorrow. None of it was agentic. When the community tore open around OpenClaw I tried it, then PicoClaw, then Hermes, which stuck. The tooling kept changing and the loss never did.
 
 I've spent the past year building a live-money trading system and the AI substrate around it. No revenue yet. I'd rather it prove itself before I decide what it becomes.
 
@@ -156,7 +156,7 @@ Easy buys convenience. This buys ownership. Those aren't the same purchase.
 
 Vendor memory is a feature of the vendor's product. It lives on their side, in a shape you can't read, on terms they set, and it goes wherever their roadmap goes. You can't open it. You can't grep it. You can't fix a wrong fact by editing a sentence — and most of the time you can't even see what it decided to remember about you. Then one day you leave, or the tool you're on stops being the tool everyone's on, and it doesn't come with you.
 
-I know how that ends because I already lived it. OpenClaw, then MoltBot, then Hermes — inside a year. Every one of them was the obvious choice at the time. Every switch cost me everything the last one held. The tooling kept changing and the loss never did. That's the sentence this whole essay grew out of. The easy options weren't wrong; they were fine, right up until the morning they were gone, and there was no version of "fine" that survived the swap.
+I know how that ends because I already lived it. OpenClaw, then PicoClaw, then Hermes — inside a year. Every one of them was the obvious choice at the time. Every switch cost me everything the last one held. The tooling kept changing and the loss never did. That's the sentence this whole essay grew out of. The easy options weren't wrong; they were fine, right up until the morning they were gone, and there was no version of "fine" that survived the swap.
 
 The files survived it. Model rotations, tool rotations, months of gap. A directory of Markdown doesn't care who's winning this quarter.
 

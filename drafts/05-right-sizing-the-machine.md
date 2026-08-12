@@ -22,11 +22,11 @@ August of 2025. A friend got me into day trading, and around the same time I fou
 
 I had never built a program in my life.
 
-Those two things collided into one specific idea: write a strategy in Pine Script, wire it through TradersPost into a prop firm account, and let it trade while I sleep. Not *I could make money* — I could build a thing, and the thing would work without me standing over it. That's the lightbulb, and everything since has been downstream of it.
+Those two things collided, and out of them came one specific idea: write a strategy in Pine Script, wire it through TradersPost into a prop firm account, and let it trade while I sleep. Not *I could make money* — I could build a thing, and the thing would work without me standing over it. That's the lightbulb, and everything since has been downstream of it.
 
 What I've built in the year since is a live-money trading system and the entire AI substrate around it.
 
-The substrate grew in layers, and every layer arrived because something broke first. For months the whole workflow was: open a chat, explain everything from the beginning, get some code, close the chat, lose it all, start over tomorrow. Then the tooling churned under me — OpenClaw, then PicoClaw, then Hermes, inside a single year, each one the obvious choice at the time and each switch costing me everything the last one held.
+The substrate grew in layers, and every layer arrived because something broke first. For months the whole workflow was: open a chat, explain everything from the beginning, get some code, close the chat, lose it all, start over tomorrow. Then the tooling churned under me — OpenClaw, then PicoClaw, then Hermes, inside a single year, each one the obvious choice at the time, each switch costing me everything the last one held.
 
 That's what forced the memory bundle. Files I own, on hardware I control, read by every session that opens. That was the last field note, and it's the substrate the rest of this sits on.
 
@@ -44,15 +44,15 @@ That layer grew the way the rest of it grew — a rule at a time, each one added
 
 The problem isn't how it grew. The problem is that a set of rules only ever gets added to — and I'd been checking it occasionally, when something prompted me, instead of on a cadence that kept pace with how fast everything around it was moving.
 
-And here's what I like about this one: it's the same shape as the memory bundle, one level up. The bundle is progressive disclosure for my FACTS — an index always resident, the bodies pulled in only when something matters. This is progressive disclosure for the operating context itself. I'd already built the pattern. I just hadn't noticed it applied here too.
+And here's what I like about this layer: it's the same shape as the memory bundle, one level up. The bundle is progressive disclosure for my FACTS — an index always resident, the bodies pulled in only when something matters. This is progressive disclosure for the operating context itself. I'd already built the pattern. I just hadn't noticed it applied here too.
 
 ## Why I was looking
 
 I audit this system on purpose. Not on a crisis — on a cadence.
 
-That's the actual driver, and I want it stated plainly before I get to the research, because the research is what people will assume the reason was. It isn't. Hardening this rig as I go is how I work: I find the weak joint, I name it, I fix it, and I say out loud what I changed. Iterating in the open is the discipline, not an admission.
+That's the actual driver, and I want it stated plainly before I get to the research, because people will assume the research was the reason. It isn't. Hardening this rig as I go is how I work: I find the weak joint, I name it, I fix it, and I say out loud what I changed. Iterating in the open is the discipline, not an admission.
 
-I build the self-checks in deliberately. The project registry exists for exactly that reason — a standing inventory of what I'm running and where it stands, added specifically to keep me honest about a portfolio that got too wide to hold in my head. That's the pattern: when I notice I can't personally track something anymore, I build the thing that tracks it.
+Building those self-checks in is deliberate. The project registry exists for exactly that reason — a standing inventory of what I'm running and where it stands, added specifically to keep me honest about a portfolio that got too wide to hold in my head. That's the pattern: when I notice I can't personally track something anymore, I build the thing that tracks it.
 
 So the auditing habit was never the gap. The gap was narrower and more specific — I had never put the HARNESS itself on that footing. Its weight, its health, whether the rules in it still pointed at anything real … I checked those when something prompted me to. Occasionally. Never on a clock.
 
@@ -66,7 +66,7 @@ I'd taken a pass at this exact layer the week before. It didn't fully hold — a
 
 What I was missing was a mechanism. A reason to believe a cut was safe, and a rule for deciding what goes where.
 
-That's what the reading gave me. Anthropic put out a post on the new rules of context engineering for Claude 5 [1], and the claim that stopped me was that they cut something like 80% of Claude Code's own system prompt and the newer models came out BETTER — not worse. Alongside it, the Prompt-Induced Waste paper [2], which prices what over-stuffed and conflicting instructions actually cost you: roughly 15× the reasoning tokens on certain prompt padding, with no accuracy gain to show for it.
+That's what the reading gave me. Anthropic put out a post on the new rules of context engineering for Claude 5 [1], and the claim that stopped me was that they cut something like 80% of Claude Code's own system prompt and that the newer models came out BETTER — not worse. Alongside it, the Prompt-Induced Waste paper [2], which prices what over-stuffed and conflicting instructions actually cost you: roughly 15× the reasoning tokens on certain prompt padding, with no accuracy gain to show for it.
 
 So: the discipline is why I was in there. The research is what made this pass stick.
 
@@ -80,7 +80,7 @@ Before any argument about what's worth keeping — weigh it.
 
 Not fifteen files that *could* load. Fifteen that DO.
 
-The mechanism is worth being precise about, because it's the part most people have wrong about their own setup. There's no `@import` line doing it. There's no hook. Claude Code loads memory files natively — the harness walks `~/.claude/`, concatenates what it finds as global memory, and hands the whole thing to the session before the first turn. Unconditionally. Whether the task needs a word of it or not.
+The mechanism is worth pinning down, because it's the part most people have wrong about their own setup. There's no `@import` line doing it. There's no hook. Claude Code loads memory files natively — the harness walks `~/.claude/`, concatenates what it finds as global memory, and hands the whole thing to the session before the first turn. Unconditionally. Whether the task needs a word of it or not.
 
 That's a good mechanism. It's the same one that makes my memory index work — the index is resident because the harness puts it there, not because I remembered to ask for it.
 
@@ -104,9 +104,9 @@ Four things had drifted, and every one was billing me on every turn.
 
 I have a standing rule that an alarm must never be silenceable by the same failure it reports — that "non-fatal" is a claim you justify, not a claim you assume. Five hooks failing into a void is precisely the class of thing that rule exists to surface, and surfacing it is what the audit is FOR. It's also why that rule is one of the two I kept resident. More on that below.
 
-**A 39-line integration calling functions that don't exist.** Marked *use every session*, pointing my brain service at names I'd renamed at some point without propagating the change.
+**A 39-line integration calling functions that don't exist.** Marked *use every session*, calling my brain service by names I'd since renamed and never propagated.
 
-**A stale project index** — a decommissioned repo still listed as my live P0, the system that actually is my P0 missing entirely, dead paths scattered through it.
+**A stale project index** — a decommissioned repo still listed as my live P0, the system that actually holds that slot missing entirely, dead paths scattered through it.
 
 This is what entropy looks like in a system built hard and fast by one person, under real time pressure, across a year of shipping. The tool gets renamed and the doc doesn't. The MCP comes out and its 65-line policy stays behind like a fossil. Hand-maintained indexes drift, always, everywhere, because that's what hand-maintained means.
 
@@ -124,7 +124,7 @@ The ADHD five-item output cap. No-yes-man. Plain-language alerts. No LLM in the 
 
 None of it in CLAUDE.md. None of it in `rules/`. It lived in a plugin and in scattered session transcripts — which is to say, it lived nowhere that loads.
 
-Sit with the shape of that. I was paying 13,891 tokens a turn for procedure a current model derives on its own, while the handful of things it genuinely needs FROM ME — my taste, my output shape, the hard safety rails around live money — weren't written anywhere it would ever read them.
+Sit with the shape of that. I was paying 13,891 tokens a turn for procedure a current model derives on its own, while the handful of things it genuinely needs FROM ME — my taste, my output shape, the hard safety rails around live money — weren't written down in any file it would ever read.
 
 That's not a bloat problem. That's a layer that had drifted off its own purpose.
 
@@ -138,7 +138,7 @@ And there's **procedure** — situational, real, worth keeping, and dead weight 
 
 Anthropic's post [1] hands you the sorting test in a single line: *could the model figure this out on its own? If yes, cut it.*
 
-Applied honestly, most of the weight failed that test on contact. And my actual rules passed it — which means the restructure's first job was to write them in for the first time.
+Applied honestly, the test took out most of the weight on contact. And my actual rules passed it — which means the restructure's first job was to write them in for the first time.
 
 The audit ADDED, even as it cut. I didn't expect that going in, and it's the most useful thing I took out of the pass.
 
@@ -158,7 +158,7 @@ Index resident, bodies on demand. Same shape as the memory bundle. One layer up.
 
 **13,891 tokens down to 5,167 always-on. A 62.8% cut — about 8,700 tokens handed back every turn.**
 
-Across a fifty-turn working session that's north of four hundred thousand tokens no longer spent re-reading things the model didn't need.
+Across a fifty-turn working session, that's north of four hundred thousand tokens no longer spent re-reading things the model didn't need.
 
 One note on that number, because I'd rather report the one I hit than the one I aimed at: the plan I wrote going in projected a 92% cut. The gap is the two rails I chose to keep and the real rules I had to write in. I'll take the trade.
 
@@ -170,7 +170,7 @@ The stale index got the same treatment one level down. It regenerates on a sched
 
 Don't over-trim. The test cuts both ways, and the failure mode on the far side is worse than weight.
 
-Two rules stayed resident, and both are trading-safety rails: async loop safety, and fail-loud observability. Both came out of the same P0 — a live system that dropped exit signals silently for hours, because an async client was cached across event loops and the alarm that should have screamed was riding the exact path it was meant to be watching.
+Two rules stayed resident, and both are trading-safety rails: async loop safety, and fail-loud observability. Both came out of the same P0 — a live system that dropped exit signals silently for hours because an async client was cached across event loops and the alarm that should have screamed was riding the exact path it was meant to be watching.
 
 Every instinct in this piece says move those to skills. I kept them, and the reasoning is the whole caution:
 

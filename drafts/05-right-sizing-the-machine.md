@@ -206,6 +206,4 @@ Right-size it, or pay the tax on every turn you take.
 
 ---
 
-*These field notes feed the monthly Trident Digest — the short-form version of what I'm learning, once a month, for people building alone with AI. Subscribe below, or find me on Threads.*
-
 — *Thomas Adair. Marine. DJ/Producer. Systems Architect — shipping across trading systems, music production, agentic tooling, and consumer apps with AI orchestration.*

@@ -64,7 +64,7 @@ Run a candidate sentence past those three and it either survives or it collapses
 
 ## Where I learned it: the thing that kept forgetting
 
-The project that taught me this was not a project. It was the substrate underneath all of them — the memory bundle I wrote about last time.
+The project that taught me this was not a project. It was the substrate underneath all of them — the persistent memory bundle, which has a field note of its own in this series.
 
 Here is the problem as I actually lived it. I would open a session with an AI, explain the entire system from the beginning, get real work out of it, close the session, and lose everything. Next day, same explanation. Then the tooling generation turned over — I tried OpenClaw, then MoltBot, then landed on Hermes, which stuck — and every time, the thing I lost was identical. Everything the last version of me had worked out.
 

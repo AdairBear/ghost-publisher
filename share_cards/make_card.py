@@ -5,7 +5,7 @@ Tiers: field | shortform | signal | digest. Only the category pill takes the
 tier colour; trident, wordmark, N-degree marker and rule stay brand gold
 #D4A84A. Outputs a 2400x1260 PNG (1.9:1, the Open Graph shape).
 
-Font stacks are ordered best-first. Inter / TwistSans are listed ahead of the
+Font stacks are ordered best-first. Inter / Twist Sans are listed ahead of the
 fallbacks so the render upgrades automatically once those are installed —
 no code change needed. See `check_fonts()` for what is actually resolvable.
 """
@@ -26,7 +26,11 @@ BRAND = "#D4A84A"
 SUB_BOTTOM = 545
 
 # Best-first font stacks. Real display faces lead; installed fallbacks follow.
-TITLE_FONT = "TwistSans, Inter, Liberation Sans, Helvetica Neue, Helvetica, sans-serif"
+# "Twist Sans" must carry its space: that is the font's real family name, and
+# cairo's font selection matches families literally. `fc-match TwistSans` DOES
+# resolve (fontconfig ignores spaces), which makes the wrong spelling look
+# correct from the shell while cairosvg silently renders the default face.
+TITLE_FONT = "Twist Sans, Inter, Liberation Sans, Helvetica Neue, Helvetica, sans-serif"
 BODY_FONT = "Inter Variable, Inter, Liberation Sans, Helvetica Neue, sans-serif"
 MONO_FONT = "JetBrains Mono, Menlo, monospace"
 ITALIC_FONT = "Inter Variable, Inter, Helvetica Neue, sans-serif"
@@ -236,7 +240,7 @@ def check_fonts() -> dict[str, bool]:
     Returns:
         Mapping of family name to whether it is installed.
     """
-    wanted = ["Inter", "TwistSans", "JetBrains Mono", "Liberation Sans"]
+    wanted = ["Inter", "Twist Sans", "JetBrains Mono", "Liberation Sans"]
     found = {}
     for family in wanted:
         try:

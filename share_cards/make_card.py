@@ -5,7 +5,7 @@ Tiers: field | shortform | signal | digest. Only the category pill takes the
 tier colour; trident, wordmark, N-degree marker and rule stay brand gold
 #D4A84A. Outputs a 2400x1260 PNG (1.9:1, the Open Graph shape).
 
-Font stacks are ordered best-first. Inter / Twist Sans are listed ahead of the
+Font stacks are ordered best-first. Inter / FC Twist are listed ahead of the
 fallbacks so the render upgrades automatically once those are installed —
 no code change needed. See `check_fonts()` for what is actually resolvable.
 """
@@ -13,6 +13,7 @@ no code change needed. See `check_fonts()` for what is actually resolvable.
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 
 import cairosvg
@@ -26,11 +27,16 @@ BRAND = "#D4A84A"
 SUB_BOTTOM = 545
 
 # Best-first font stacks. Real display faces lead; installed fallbacks follow.
-# "Twist Sans" must carry its space: that is the font's real family name, and
-# cairo's font selection matches families literally. `fc-match TwistSans` DOES
-# resolve (fontconfig ignores spaces), which makes the wrong spelling look
-# correct from the shell while cairosvg silently renders the default face.
-TITLE_FONT = "Twist Sans, Inter, Liberation Sans, Helvetica Neue, Helvetica, sans-serif"
+# The brand face is registered as "FC Twist [Non-commercial]" — brackets and
+# all. Cairo matches family names literally, so the shorter "FC Twist" silently
+# renders the default face instead. Quoted because brackets are not valid in an
+# unquoted CSS family name. Verified by render hash, not by fc-match: the
+# brackets and hyphen are fontconfig *pattern* syntax, so `fc-match` reports
+# Verdana for this family even though cairosvg resolves it correctly.
+TITLE_FONT = (
+    "'FC Twist [Non-commercial]', Inter, Liberation Sans, "
+    "Helvetica Neue, Helvetica, sans-serif"
+)
 BODY_FONT = "Inter Variable, Inter, Liberation Sans, Helvetica Neue, sans-serif"
 MONO_FONT = "JetBrains Mono, Menlo, monospace"
 ITALIC_FONT = "Inter Variable, Inter, Helvetica Neue, sans-serif"
@@ -240,12 +246,17 @@ def check_fonts() -> dict[str, bool]:
     Returns:
         Mapping of family name to whether it is installed.
     """
-    wanted = ["Inter", "Twist Sans", "JetBrains Mono", "Liberation Sans"]
+    wanted = ["Inter", "FC Twist [Non-commercial]", "JetBrains Mono", "Liberation Sans"]
     found = {}
     for family in wanted:
+        # `-` `[` `]` `:` `,` are fontconfig *pattern* metacharacters. An
+        # unescaped family containing them (e.g. "FC Twist [Non-commercial]")
+        # parses as a malformed pattern and reports NOT FOUND for a font that
+        # is installed and rendering fine — a false alarm, so escape them.
+        pattern = re.sub(r"([-\[\]:,\\])", r"\\\1", family)
         try:
             out = subprocess.run(
-                ["fc-list", "-q", family],
+                ["fc-list", "-q", pattern],
                 capture_output=True,
                 timeout=10,
                 check=False,

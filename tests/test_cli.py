@@ -131,7 +131,7 @@ def test_live_run_creates_schedules_records_and_archives(
     assert post["status"] == "scheduled"
     assert post["slug"] == "a-real-piece"
     assert post["featured"] is True
-    assert [tag["name"] for tag in post["tags"]] == ["Trading"]
+    assert [tag["name"] for tag in post["tags"]] == ["Trading", "#field-note"]
     assert "<h1>Heading</h1>" in post["html"]
     assert "<strong>words</strong>" in post["html"]
     assert post["published_at"].endswith("Z")

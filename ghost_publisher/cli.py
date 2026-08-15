@@ -15,13 +15,21 @@ from __future__ import annotations
 
 import argparse
 import logging
+import re
 import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from . import __version__
-from .config import Config, ConfigError, load_config, load_credentials
+from .config import (
+    Config,
+    ConfigError,
+    Credentials,
+    load_config,
+    load_credentials,
+)
+
 from .ghost_client import (
     GhostApiError,
     GhostClient,
@@ -34,6 +42,27 @@ from .render import RenderError, markdown_to_html
 from .scheduling import ScheduleError, next_slot, to_ghost_timestamp
 from .state import PublishRecord, State, StateError
 
+# Frontmatter tag -> card tier. Accepts the public tag a piece already carries
+# ("field-notes") as well as the internal tier tag ("#field-note").
+TIER_BY_TAG = {
+    "field-notes": "field",
+    "#field-note": "field",
+    "short-form-note": "shortform",
+    "#short-form-note": "shortform",
+    "signal": "signal",
+    "#signal": "signal",
+    "digest": "digest",
+    "#digest": "digest",
+}
+
+# Internal tier tag written onto every new post, so tier is machine-readable.
+TIER_TAG = {
+    "field": "#field-note",
+    "shortform": "#short-form-note",
+    "signal": "#signal",
+    "digest": "#digest",
+}
+
 logger = logging.getLogger("ghost_publisher")
 
 EXIT_OK = 0
@@ -42,6 +71,85 @@ EXIT_CONFIG = 2
 EXIT_REFUSED = 3
 
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _tier_for(item: QueueItem) -> str:
+    """Resolve a piece's card tier from its frontmatter tags.
+
+    Args:
+        item: The queue item.
+
+    Returns:
+        A tier key, defaulting to `field` when no tier tag is present.
+    """
+    for tag in item.tags:
+        tier = TIER_BY_TAG.get(tag.strip().lower())
+        if tier:
+            return tier
+    return "field"
+
+
+def _issue_number(filename: str) -> str:
+    """Pull the issue number from a numbered queue filename.
+
+    `10-trident-report.md` -> `10`. Falls back to `01` when the filename
+    carries no numeric prefix.
+
+    Args:
+        filename: The queue file's basename.
+
+    Returns:
+        The issue number as a string.
+    """
+    match = re.match(r"(\d+)", filename)
+    return match.group(1) if match else "01"
+
+
+def _attach_share_card(config: Config, credentials: Credentials, created: dict, item: QueueItem) -> None:
+    """Render and attach the branded OG card to a freshly created post.
+
+    Fail-soft by design: the post is already created, recorded in state and
+    archived by this point, so a card failure must never abort the run or
+    surface as a publishing error. It logs at WARNING and returns.
+
+    The draft-only guard in the CLI is deliberately bypassed here — the
+    pipeline created this post moments ago, so writing to it is not the
+    "modifying someone's live post" case that guard exists to prevent. Only
+    `og_image` / `twitter_image` are set; the header image is left alone.
+
+    Args:
+        config: The resolved run config.
+        credentials: Ghost credentials already loaded for this run.
+        created: The post dict returned by `create_post`.
+        item: The queue item the post was built from.
+    """
+    try:
+        sys.path.insert(0, str(config.paths.root / "share_cards"))
+        import ghost_og_card
+        import make_card
+
+        tier = _tier_for(item)
+        num = _issue_number(item.path.name)
+        svg = make_card.build_svg(
+            tier,
+            num,
+            make_card.DEFAULT_KICK[tier],
+            item.title,
+            item.excerpt or "",
+        )
+        out = config.paths.root / "share_cards" / f"card-{created['slug']}.png"
+        make_card.render_png(svg, str(out))
+
+        base_url = f"{credentials.api_url}/ghost/api/admin"
+        image_url = ghost_og_card.upload_image(base_url, credentials, out)
+        ghost_og_card.attach_image(base_url, credentials, created, image_url)
+        logger.info("share card attached (tier=%s, N%s): %s", tier, num, image_url)
+    except Exception as exc:  # noqa: BLE001 — cosmetic step, never break publishing
+        logger.warning(
+            "share card not attached to %s (post itself is fine): %s",
+            created.get("slug"),
+            exc,
+        )
 
 
 def _resolve_slug(item: QueueItem) -> str:
@@ -71,9 +179,7 @@ def _archive(item: QueueItem, published_dir: Path, slot: datetime) -> Path:
     return destination
 
 
-def command_run(
-    config: Config, *, dry_run: bool, force: bool, web_only: bool = False
-) -> int:
+def command_run(config: Config, *, dry_run: bool, force: bool, web_only: bool = False) -> int:
     """Schedule the top queued piece on Ghost.
 
     Args:
@@ -96,17 +202,13 @@ def command_run(
 
     item = next_publishable(items)
     if item is None:
-        logger.info(
-            "nothing ready to publish — queue is empty or all items are on hold"
-        )
+        logger.info("nothing ready to publish — queue is empty or all items are on hold")
         return EXIT_OK
 
     slug = _resolve_slug(item)
     logger.info("selected: %s  (title=%r, slug=%s)", item.path.name, item.title, slug)
 
-    duplicate = state.find_duplicate(
-        source_file=item.path.name, content_hash=item.content_hash
-    )
+    duplicate = state.find_duplicate(source_file=item.path.name, content_hash=item.content_hash)
     if duplicate and not force:
         logger.error(
             "REFUSING: %s was already published on %s as post %s (%s). "
@@ -118,9 +220,7 @@ def command_run(
         )
         return EXIT_REFUSED
     if duplicate and force:
-        logger.warning(
-            "--force: proceeding despite existing record %s", duplicate.post_id
-        )
+        logger.warning("--force: proceeding despite existing record %s", duplicate.post_id)
 
     slot = next_slot(config.cadence, after=state.last_scheduled_at())
     published_at = to_ghost_timestamp(slot)
@@ -138,7 +238,7 @@ def command_run(
         html=html,
         slug=slug,
         published_at=published_at,
-        tags=item.tags,
+        tags=[*item.tags, TIER_TAG[_tier_for(item)]],
         featured=item.featured,
         excerpt=item.excerpt,
         defaults=config.post,
@@ -178,9 +278,7 @@ def command_run(
         logger.info("  status:       %s", post["status"])
         logger.info("  published_at: %s", post.get("published_at", "(n/a)"))
         logger.info("  featured:     %s", post["featured"])
-        logger.info(
-            "  tags:         %s", [t["name"] for t in post.get("tags", [])] or "(none)"
-        )
+        logger.info("  tags:         %s", [t["name"] for t in post.get("tags", [])] or "(none)")
         logger.info("  excerpt:      %s", post.get("custom_excerpt", "(none)"))
         logger.info("  html bytes:   %d", len(post["html"]))
         logger.info(
@@ -190,9 +288,7 @@ def command_run(
             else "(web-only, no email)",
         )
         logger.info("  html preview: %s", post["html"][:200].replace("\n", " "))
-        logger.info(
-            "  would archive %s -> %s/", item.path.name, config.paths.published_dir.name
-        )
+        logger.info("  would archive %s -> %s/", item.path.name, config.paths.published_dir.name)
         logger.info("--- end dry run ---")
         return EXIT_OK
 
@@ -216,9 +312,7 @@ def command_run(
         )
         return EXIT_REFUSED
     if existing and force:
-        logger.warning(
-            "--force: slug %r already exists on Ghost; Ghost will de-duplicate it", slug
-        )
+        logger.warning("--force: slug %r already exists on Ghost; Ghost will de-duplicate it", slug)
 
     created = client.create_post(payload, params=email_params)
     logger.info(
@@ -245,9 +339,9 @@ def command_run(
     )
 
     destination = _archive(item, config.paths.published_dir, slot)
-    logger.info(
-        "archived %s -> %s", item.path.name, destination.relative_to(config.paths.root)
-    )
+    logger.info("archived %s -> %s", item.path.name, destination.relative_to(config.paths.root))
+
+    _attach_share_card(config, credentials, created, item)
     logger.info(
         "DONE — Ghost will publish %r at %s (%s)",
         item.title,
@@ -279,9 +373,7 @@ def command_status(config: Config) -> int:
 
     credentials = load_credentials(config.paths.root / ".env", required=False)
     if credentials:
-        print(
-            f"credentials  : OK (key id {credentials.key_id[:6]}…, {credentials.api_url})"
-        )
+        print(f"credentials  : OK (key id {credentials.key_id[:6]}…, {credentials.api_url})")
     else:
         print("credentials  : NOT configured — dry-run only (see env.example)")
 
@@ -294,9 +386,7 @@ def command_status(config: Config) -> int:
     for index, item in enumerate(items, start=1):
         marker = "READY " if item.publishable else "hold  "
         note = "" if item.publishable else f"  <- {item.skip_reason}"
-        print(
-            f"  {index}. [{marker}] {item.path.name}  {item.title or '(no title)'}{note}"
-        )
+        print(f"  {index}. [{marker}] {item.path.name}  {item.title or '(no title)'}{note}")
 
     published = state.live_records()
     print(f"\npublished ({len(published)}):")
@@ -313,18 +403,14 @@ def build_parser() -> argparse.ArgumentParser:
         prog="ghost-publisher",
         description="Schedule queued Markdown pieces onto Ghost, one per cadence slot.",
     )
-    parser.add_argument(
-        "--version", action="version", version=f"ghost-publisher {__version__}"
-    )
+    parser.add_argument("--version", action="version", version=f"ghost-publisher {__version__}")
     parser.add_argument(
         "--config",
         type=Path,
         default=DEFAULT_ROOT / "config.yaml",
         help="path to config.yaml (default: alongside the project)",
     )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="debug-level console output"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="debug-level console output")
 
     sub = parser.add_subparsers(dest="command", required=True)
 

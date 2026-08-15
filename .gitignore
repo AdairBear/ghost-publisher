@@ -20,3 +20,6 @@ venv/
 
 # Local agent-tooling scratch, not part of the project
 .claude/
+
+# Generated share cards (regenerable)
+share_cards/card-*.png

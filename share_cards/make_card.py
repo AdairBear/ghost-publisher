@@ -36,12 +36,16 @@ TIERS = {
     "shortform": ("SHORT FORM NOTE", "#5AB0C4"),
     "signal": ("SIGNAL", "#3EAE5E"),
     "digest": ("DIGEST", "#A78BFA"),
+    # Not a content tier — the site's front door. Rendered without an issue
+    # number so it never reads as a numbered piece in the series.
+    "intro": ("INTRODUCTION", "#D4A84A"),
 }
 DEFAULT_KICK = {
     "field": "BUILDING ALONE WITH AI",
     "shortform": "SHORT FORM NOTE",
     "signal": "ONE ARTIFACT, ONE TAKE",
     "digest": "TRADING + AUTOMATION",
+    "intro": "START HERE",
 }
 
 
@@ -100,7 +104,9 @@ def trident(c: str, sw: int = 7) -> str:
     )
 
 
-def pill_width(t: str, fs: int = 13, ls: float = 2.6, padx: int = 20, dot: int = 8, gap: int = 12) -> float:
+def pill_width(
+    t: str, fs: int = 13, ls: float = 2.6, padx: int = 20, dot: int = 8, gap: int = 12
+) -> float:
     """Estimate the rendered width of the category pill.
 
     Args:
@@ -119,7 +125,7 @@ def pill_width(t: str, fs: int = 13, ls: float = 2.6, padx: int = 20, dot: int =
 
 def build_svg(
     tier: str,
-    num: str,
+    num: str | None,
     kick: str,
     title: str,
     sub: str,
@@ -128,8 +134,11 @@ def build_svg(
     """Build the share card as an SVG document.
 
     Args:
-        tier: One of `field`, `shortform`, `signal`, `digest`.
-        num: Issue number shown after the degree sign.
+        tier: One of `field`, `shortform`, `signal`, `digest`, `intro`.
+        num: Issue number shown after the degree sign. Pass an empty string
+            (or None) for an unnumbered card — the `N°` marker is dropped and
+            the kicker stands alone. Used by the `intro` front-door card, which
+            is not part of the numbered series.
         kick: Kicker text following the issue number.
         title: Card headline.
         sub: Sub-headline / excerpt.
@@ -144,6 +153,14 @@ def build_svg(
     pill_label, c = TIERS[tier]
     if pill:
         pill_label = pill
+
+    # An unnumbered card drops the "N° xx /" marker entirely and promotes the
+    # kicker into the brand colour, so the eyebrow line still carries weight.
+    kicker_svg = (
+        f'<tspan fill="{BRAND}" font-weight="600">N&#176; {esc(num)}</tspan> / {esc(kick)}'
+        if num
+        else f'<tspan fill="{BRAND}" font-weight="600">{esc(kick)}</tspan>'
+    )
 
     ts = 86 if len(title) <= 22 else 80 if len(title) <= 34 else 72
     tl = wrap(title, 890, ts * 0.53)
@@ -187,7 +204,7 @@ def build_svg(
 <rect x="{px0:.0f}" y="70" width="{pw:.0f}" height="38" rx="19" fill="none" stroke="{c}" stroke-opacity="0.45"/>
 <circle cx="{dot_cx:.0f}" cy="89" r="4" fill="{c}"/>
 <text x="{ptext_x:.0f}" y="94" font-family="{MONO_FONT}" font-size="13" font-weight="600" letter-spacing="2.6" fill="{c}">{esc(pill_label)}</text>
-<text x="72" y="238" font-family="{MONO_FONT}" font-size="16" letter-spacing="3.0" fill="{LABEL}"><tspan fill="{BRAND}" font-weight="600">N&#176; {esc(num)}</tspan> / {esc(kick)}</text>
+<text x="72" y="238" font-family="{MONO_FONT}" font-size="16" letter-spacing="3.0" fill="{LABEL}">{kicker_svg}</text>
 <rect x="72" y="258" width="96" height="3" fill="{BRAND}"/>
 {tsvg}
 {ssvg}

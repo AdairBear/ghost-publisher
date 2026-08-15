@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Attach a Trident share card to a Ghost post as its OG / social image.
 
-Reads a post by slug, picks the card tier from the post's internal tag
-(#field-note / #short-form-note / #signal / #digest), renders the card, uploads
-it to Ghost, and sets `feature_image`, `og_image` and `twitter_image`.
+Reads a post by slug, picks the card tier from the post's tags (the public
+`field-notes` / `signal` / ... or the internal `#field-note` / `#signal` / ...,
+using the same map as the publishing pipeline), renders the card, uploads it to
+Ghost, and sets `og_image` and `twitter_image`. The header image
+(`feature_image`) is left alone unless `--set-header` is passed.
 
 Credentials are NOT re-declared here. They come from the existing publishing
 pipeline's loader (`ghost_publisher.config.load_credentials`), which reads
@@ -34,6 +36,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import make_card  # noqa: E402  (sibling module, same directory)
+from ghost_publisher.cli import TIER_BY_TAG  # noqa: E402
 from ghost_publisher.config import ConfigError, load_credentials  # noqa: E402
 from ghost_publisher.ghost_client import make_jwt  # noqa: E402
 
@@ -43,13 +46,13 @@ ADMIN_API_PATH = "/ghost/api/admin"
 ACCEPT_VERSION = "v5.0"
 TIMEOUT = 60
 
-# Ghost internal tag -> card tier.
-TAG_TIERS = {
-    "#field-note": "field",
-    "#short-form-note": "shortform",
-    "#signal": "signal",
-    "#digest": "digest",
-}
+# Ghost tag -> card tier. Shared with the publishing pipeline so a piece is
+# tiered the same way whether it is carded on creation or re-carded later by
+# slug. Accepts both the public tag ("signal") and the internal tier tag
+# ("#signal"); older posts predate the internal tag and carry only the public
+# one. Keeping one map means a public-only post can no longer fall through to
+# FALLBACK_TIER and get silently mis-tiered.
+TAG_TIERS = TIER_BY_TAG
 FALLBACK_TIER = "field"
 
 
@@ -176,7 +179,9 @@ def upload_image(base_url: str, creds: Any, png_path: Path) -> str:
     try:
         return response.json()["images"][0]["url"]
     except (ValueError, KeyError, IndexError) as exc:
-        raise CardError(f"Ghost returned an unexpected upload body: {response.text[:300]}") from exc
+        raise CardError(
+            f"Ghost returned an unexpected upload body: {response.text[:300]}"
+        ) from exc
 
 
 def attach_image(
@@ -218,7 +223,9 @@ def attach_image(
     if set_header:
         fields["feature_image"] = image_url
     body = {"posts": [fields]}
-    response = requests.put(url, headers=_auth_headers(creds), json=body, timeout=TIMEOUT)
+    response = requests.put(
+        url, headers=_auth_headers(creds), json=body, timeout=TIMEOUT
+    )
     if response.status_code == 409:
         raise CardError("post was modified since it was read (409) — re-run to retry")
     if not response.ok:
@@ -232,7 +239,9 @@ def main() -> int:
     Returns:
         Process exit code.
     """
-    ap = argparse.ArgumentParser(description="Attach a Trident OG card to a Ghost post.")
+    ap = argparse.ArgumentParser(
+        description="Attach a Trident OG card to a Ghost post."
+    )
     ap.add_argument("--slug", required=True, help="Slug of the post to card.")
     ap.add_argument("--tier", default=None, help="Override the tag-derived tier.")
     ap.add_argument("--kick", default=None, help="Override the kicker line.")
@@ -286,7 +295,9 @@ def main() -> int:
 
     tier = args.tier or (tier_from_post(post) if post else FALLBACK_TIER)
     if tier not in make_card.TIERS:
-        logger.error("unknown tier %r (expected one of %s)", tier, ", ".join(make_card.TIERS))
+        logger.error(
+            "unknown tier %r (expected one of %s)", tier, ", ".join(make_card.TIERS)
+        )
         return 2
 
     title = args.title or post.get("title") or args.slug
@@ -316,7 +327,9 @@ def main() -> int:
     try:
         image_url = upload_image(base_url, creds, out_path)
         logger.info("uploaded card: %s", image_url)
-        updated = attach_image(base_url, creds, post, image_url, set_header=args.set_header)
+        updated = attach_image(
+            base_url, creds, post, image_url, set_header=args.set_header
+        )
     except CardError as exc:
         logger.error("%s", exc)
         return 1
